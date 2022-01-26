@@ -1,0 +1,1 @@
+executable('as', 'exasm.cc')
