@@ -47,6 +47,8 @@
          document.getElementById('run_asm')
                  .addEventListener('click', (e) => {
                      e.preventDefault();
+                     document.getElementById('err').innerText = '';
+
                      const src = document.getElementById('src').value;
                      const encoder = new TextEncoder();
                      const data = encoder.encode(src);
