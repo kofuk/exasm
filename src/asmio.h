@@ -69,7 +69,7 @@ namespace exasm {
     };
 
     std::ostream &operator<<(std::ostream &out, InstType ty);
-    std::ostream &operator<<(std::ostream &out, Inst &inst);
+    std::ostream &operator<<(std::ostream &out, const Inst &inst);
 
     class ParseError : public std::runtime_error {
     public:

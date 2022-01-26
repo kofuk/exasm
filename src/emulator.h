@@ -58,6 +58,7 @@ namespace exasm {
         }
 
         void set_program(std::vector<Inst> &prog) { this->prog = prog; }
+        const std::vector<Inst> &get_program() { return this->prog; }
 
         void load_memfile(std::istream &strm);
         void set_breakpoint(std::uint16_t addr);

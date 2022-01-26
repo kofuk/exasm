@@ -18,3 +18,17 @@ webas = custom_target(
   install : true,
   install_dir : '/opt/exasm',
 )
+
+webas = custom_target(
+  output : ['webemu.html'],
+  input : ['wasm_shell_webemu.html', 'webemu.cc', 'asmio.cc', 'emulator.cc'],
+  command : [
+    emcc, '-s', 'WASM=1', '-s', 'NO_EXIT_RUNTIME=1',
+    '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
+    '-s', 'EXPORTED_FUNCTIONS=["_free"]',
+    '-s', 'NO_DISABLE_EXCEPTION_CATCHING',
+    '-o', '@OUTPUT@', '--shell-file', '@INPUT@',
+  ],
+  install : true,
+  install_dir : '/opt/exasm',
+)

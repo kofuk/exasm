@@ -404,7 +404,7 @@ namespace exasm {
         return out << "<unknown>";
     }
 
-    std::ostream &operator<<(std::ostream &out, Inst &inst) {
+    std::ostream &operator<<(std::ostream &out, const Inst &inst) {
         out << inst.inst;
         if (inst.inst != InstType::NOP) {
             out << ' ';
