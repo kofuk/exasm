@@ -2,17 +2,6 @@
 
 namespace exasm {
     namespace {
-        long linum = 1;
-
-        [[noreturn]] void parse_error(const char *message = nullptr) {
-            std::cerr << "Parse error at line " << linum;
-            if (message != nullptr) {
-                std::cerr << ": " << message;
-            }
-            std::cerr << '\n';
-            std::exit(1);
-        }
-
         [[noreturn]] void asm_error(const char *message = nullptr) {
             std::cerr << "Asm error";
             if (message != nullptr) {
@@ -118,231 +107,242 @@ namespace exasm {
             }
             return out;
         }
-
-        InstType read_inst_type(std::istream &strm) {
-            std::string inst;
-            for (;;) {
-                char c;
-                strm.get(c);
-                if (strm.fail()) {
-                    break;
-                }
-                if (('a' <= c && c <= 'z') || ('0' <= c && c <= '9')) {
-                    inst.push_back(c);
-                } else {
-                    strm.unget();
-                    break;
-                }
-            }
-
-            if (inst == "nop") {
-                return InstType::NOP;
-            } else if (inst == "mov") {
-                return InstType::MOV;
-            } else if (inst == "not") {
-                return InstType::NOT;
-            } else if (inst == "xor") {
-                return InstType::XOR;
-            } else if (inst == "add") {
-                return InstType::ADD;
-            } else if (inst == "sub") {
-                return InstType::SUB;
-            } else if (inst == "sl8") {
-                return InstType::SL8;
-            } else if (inst == "sr8") {
-                return InstType::SR8;
-            } else if (inst == "sl") {
-                return InstType::SL;
-            } else if (inst == "sr") {
-                return InstType::SR;
-            } else if (inst == "and") {
-                return InstType::AND;
-            } else if (inst == "or") {
-                return InstType::OR;
-            } else if (inst == "addi") {
-                return InstType::ADDI;
-            } else if (inst == "andi") {
-                return InstType::ANDI;
-            } else if (inst == "ori") {
-                return InstType::ORI;
-            } else if (inst == "lli") {
-                return InstType::LLI;
-            } else if (inst == "lui") {
-                return InstType::LUI;
-            } else if (inst == "sw") {
-                return InstType::SW;
-            } else if (inst == "lw") {
-                return InstType::LW;
-            } else if (inst == "sbu") {
-                return InstType::SBU;
-            } else if (inst == "lbu") {
-                return InstType::LBU;
-            } else if (inst == "beqz") {
-                return InstType::BEQZ;
-            } else if (inst == "bnez") {
-                return InstType::BNEZ;
-            } else if (inst == "bmi") {
-                return InstType::BMI;
-            } else if (inst == "bpl") {
-                return InstType::BPL;
-            } else if (inst == "j") {
-                return InstType::J;
-            }
-
-            parse_error("Unknown instruction");
-        }
-
-        void next_line(std::istream &strm) {
-            for (;;) {
-                char c;
-                strm.get(c);
-                if (strm.fail()) {
-                    break;
-                }
-                if (c == '\n') {
-                    ++linum;
-                    return;
-                }
-            }
-        }
-
-        void skip_space(std::istream &strm) {
-            for (;;) {
-                char c;
-                strm.get(c);
-                if (strm.fail()) {
-                    return;
-                }
-                if (!(c == ' ' || c == '\t')) {
-                    strm.unget();
-                    return;
-                }
-            }
-        }
-
-        void skip_space_and_newline(std::istream &strm) {
-            for (;;) {
-                char c;
-                strm.get(c);
-                if (strm.fail()) {
-                    return;
-                }
-                if (c == '\n') {
-                    ++linum;
-                }
-                if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) {
-                    strm.unget();
-                    return;
-                }
-            }
-        }
-
-        bool finished(std::istream &strm) {
-            char c;
-            strm.get(c);
-            if (strm.fail()) {
-                return true;
-            }
-            strm.unget();
-            return false;
-        }
-
-        std::uint8_t read_reg(std::istream &strm) {
-            char c;
-            strm.get(c);
-            if (strm.fail()) {
-                parse_error("Register expected, but got EOF");
-            }
-            if (c != 'r') {
-                parse_error("Illegal register syntax");
-            }
-            strm.get(c);
-            if (strm.fail()) {
-                parse_error("Register number expected, but got EOF");
-            }
-            if ('0' <= c && c <= '9') {
-                std::uint8_t reg_num = c - '0';
-                if (reg_num >= 8) {
-                    parse_error("Illegal register number");
-                }
-                return reg_num;
-            }
-            parse_error("Illegal register");
-        }
-
-        void must_read(std::istream &strm, char c) {
-            char d;
-            strm.get(d);
-            if (strm.fail()) {
-                parse_error("Unexpected EOF");
-            }
-            if (d != c) {
-                parse_error("Unexpected char");
-            }
-        }
-
-        std::uint8_t read_immediate(std::istream &strm, bool allow_sign) {
-            char c;
-            strm.get(c);
-            if (strm.fail()) {
-                parse_error("Unexpected EOF");
-            }
-            bool minus = false;
-            if (allow_sign) {
-                if (c == '-') {
-                    minus = true;
-                    strm.get(c);
-                    if (strm.fail()) {
-                        parse_error("Unexpected EOF");
-                    }
-                }
-            }
-
-            std::uint8_t result = 0;
-            int base = 10;
-            if (c == '0') {
-                base = 8;
-                char c;
-                strm.get(c);
-                if (strm.fail()) {
-                    return 0;
-                }
-                if (c == 'x') {
-                    base = 16;
-                }
-            } else if ('1' <= c && c <= '9') {
-                result = c - '0';
-            } else {
-                parse_error("Illegal immediate");
-            }
-            for (;;) {
-                char c;
-                strm.get(c);
-                if (strm.fail()) {
-                    break;
-                }
-                int curnum;
-                if ('0' <= c && c <= '9') {
-                    curnum = c - '0';
-                } else if ('a' <= c && c <= 'f') {
-                    curnum = c - 'W';
-                } else if ('A' <= c && c <= 'F') {
-                    curnum = c - '7';
-                } else {
-                    strm.unget();
-                    break;
-                }
-                result *= base;
-                result += curnum;
-            }
-
-            if (minus) {
-                result = ~result + 1;
-            }
-
-            return result;
-        }
     } // namespace
+
+    std::string AsmReader::format_error(std::string message) {
+        std::string result = ""
+                             "Parse error at line " +
+                             std::to_string(linum);
+        if (message.size() != 0) {
+            result += ": " + message;
+        }
+        return result;
+    }
+
+    InstType AsmReader::read_inst_type() {
+        std::string inst;
+        for (;;) {
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                break;
+            }
+            if (('a' <= c && c <= 'z') || ('0' <= c && c <= '9')) {
+                inst.push_back(c);
+            } else {
+                strm.unget();
+                break;
+            }
+        }
+
+        if (inst == "nop") {
+            return InstType::NOP;
+        } else if (inst == "mov") {
+            return InstType::MOV;
+        } else if (inst == "not") {
+            return InstType::NOT;
+        } else if (inst == "xor") {
+            return InstType::XOR;
+        } else if (inst == "add") {
+            return InstType::ADD;
+        } else if (inst == "sub") {
+            return InstType::SUB;
+        } else if (inst == "sl8") {
+            return InstType::SL8;
+        } else if (inst == "sr8") {
+            return InstType::SR8;
+        } else if (inst == "sl") {
+            return InstType::SL;
+        } else if (inst == "sr") {
+            return InstType::SR;
+        } else if (inst == "and") {
+            return InstType::AND;
+        } else if (inst == "or") {
+            return InstType::OR;
+        } else if (inst == "addi") {
+            return InstType::ADDI;
+        } else if (inst == "andi") {
+            return InstType::ANDI;
+        } else if (inst == "ori") {
+            return InstType::ORI;
+        } else if (inst == "lli") {
+            return InstType::LLI;
+        } else if (inst == "lui") {
+            return InstType::LUI;
+        } else if (inst == "sw") {
+            return InstType::SW;
+        } else if (inst == "lw") {
+            return InstType::LW;
+        } else if (inst == "sbu") {
+            return InstType::SBU;
+        } else if (inst == "lbu") {
+            return InstType::LBU;
+        } else if (inst == "beqz") {
+            return InstType::BEQZ;
+        } else if (inst == "bnez") {
+            return InstType::BNEZ;
+        } else if (inst == "bmi") {
+            return InstType::BMI;
+        } else if (inst == "bpl") {
+            return InstType::BPL;
+        } else if (inst == "j") {
+            return InstType::J;
+        }
+
+        throw ParseError(format_error("Unknown instruction"));
+    }
+
+    void AsmReader::next_line() {
+        for (;;) {
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                break;
+            }
+            if (c == '\n') {
+                ++linum;
+                return;
+            }
+        }
+    }
+
+    void AsmReader::skip_space() {
+        for (;;) {
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                return;
+            }
+            if (!(c == ' ' || c == '\t')) {
+                strm.unget();
+                return;
+            }
+        }
+    }
+
+    void AsmReader::skip_space_and_newline() {
+        for (;;) {
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                return;
+            }
+            if (c == '\n') {
+                ++linum;
+            }
+            if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) {
+                strm.unget();
+                return;
+            }
+        }
+    }
+
+    bool AsmReader::finished() {
+        char c;
+        strm.get(c);
+        if (strm.fail()) {
+            return true;
+        }
+        strm.unget();
+        return false;
+    }
+
+    std::uint8_t AsmReader::read_reg() {
+        char c;
+        strm.get(c);
+        if (strm.fail()) {
+            throw ParseError(format_error("Register expected, but got EOF"));
+        }
+        if (c != 'r') {
+            throw ParseError(format_error("Illegal register syntax"));
+        }
+        strm.get(c);
+        if (strm.fail()) {
+            throw ParseError(
+                format_error("Register number expected, but got EOF"));
+        }
+        if ('0' <= c && c <= '9') {
+            std::uint8_t reg_num = c - '0';
+            if (reg_num >= 8) {
+                throw ParseError(format_error("Illegal register number"));
+            }
+            return reg_num;
+        }
+        throw ParseError(format_error("Illegal register"));
+    }
+
+    void AsmReader::must_read(char c) {
+        char d;
+        strm.get(d);
+        if (strm.fail()) {
+            throw ParseError(format_error("Unexpected EOF"));
+        }
+        if (d != c) {
+            throw ParseError(format_error("Unexpected char"));
+        }
+    }
+
+    std::uint8_t AsmReader::read_immediate(bool allow_sign) {
+        char c;
+        strm.get(c);
+        if (strm.fail()) {
+            throw ParseError(format_error("Unexpected EOF"));
+        }
+        bool minus = false;
+        if (allow_sign) {
+            if (c == '-') {
+                minus = true;
+                strm.get(c);
+                if (strm.fail()) {
+                    throw ParseError(format_error("Unexpected EOF"));
+                }
+            }
+        }
+
+        std::uint8_t result = 0;
+        int base = 10;
+        if (c == '0') {
+            base = 8;
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                return 0;
+            }
+            if (c == 'x') {
+                base = 16;
+            }
+        } else if ('1' <= c && c <= '9') {
+            result = c - '0';
+        } else {
+            throw ParseError(format_error("Illegal immediate"));
+        }
+        for (;;) {
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                break;
+            }
+            int curnum;
+            if ('0' <= c && c <= '9') {
+                curnum = c - '0';
+            } else if ('a' <= c && c <= 'f') {
+                curnum = c - 'W';
+            } else if ('A' <= c && c <= 'F') {
+                curnum = c - '7';
+            } else {
+                strm.unget();
+                break;
+            }
+            result *= base;
+            result += curnum;
+        }
+
+        if (minus) {
+            result = ~result + 1;
+        }
+
+        return result;
+    }
 
     std::ostream &operator<<(std::ostream &out, InstType ty) {
         switch (ty) {
@@ -466,11 +466,11 @@ namespace exasm {
         return out;
     }
 
-    Inst read_next(std::istream &strm) {
-        InstType ty = read_inst_type(strm);
+    Inst AsmReader::read_next() {
+        InstType ty = read_inst_type();
         switch (ty) {
         case InstType::NOP:
-            next_line(strm);
+            next_line();
             return Inst();
         case InstType::MOV:
         case InstType::NOT:
@@ -483,30 +483,30 @@ namespace exasm {
         case InstType::SR:
         case InstType::AND:
         case InstType::OR: {
-            skip_space(strm);
-            std::uint8_t rd = read_reg(strm);
-            skip_space(strm);
-            must_read(strm, ',');
-            skip_space(strm);
-            std::uint8_t rs = read_reg(strm);
-            next_line(strm);
+            skip_space();
+            std::uint8_t rd = read_reg();
+            skip_space();
+            must_read(',');
+            skip_space();
+            std::uint8_t rs = read_reg();
+            next_line();
             return Inst(ty, rd, rs, true);
         }
         case InstType::SW:
         case InstType::LW:
         case InstType::SBU:
         case InstType::LBU: {
-            skip_space(strm);
-            std::uint8_t rd = read_reg(strm);
-            skip_space(strm);
-            must_read(strm, ',');
-            skip_space(strm);
-            must_read(strm, '(');
-            skip_space(strm);
-            std::uint8_t rs = read_reg(strm);
-            skip_space(strm);
-            must_read(strm, ')');
-            next_line(strm);
+            skip_space();
+            std::uint8_t rd = read_reg();
+            skip_space();
+            must_read(',');
+            skip_space();
+            must_read('(');
+            skip_space();
+            std::uint8_t rs = read_reg();
+            skip_space();
+            must_read(')');
+            next_line();
             return Inst(ty, rd, rs, false);
         }
         case InstType::ADDI:
@@ -518,34 +518,34 @@ namespace exasm {
         case InstType::BNEZ:
         case InstType::BMI:
         case InstType::BPL: {
-            skip_space(strm);
-            std::uint8_t rd = read_reg(strm);
-            skip_space(strm);
-            must_read(strm, ',');
-            skip_space(strm);
+            skip_space();
+            std::uint8_t rd = read_reg();
+            skip_space();
+            must_read(',');
+            skip_space();
             bool sign_allowed = ty == InstType::ADDI || ty == InstType::BEQZ ||
                                 ty == InstType::BNEZ || ty == InstType::BMI ||
                                 ty == InstType::BPL;
-            std::uint8_t imm = read_immediate(strm, sign_allowed);
-            next_line(strm);
+            std::uint8_t imm = read_immediate(sign_allowed);
+            next_line();
             return Inst(ty, rd, imm);
         }
         case InstType::J: {
-            skip_space(strm);
-            std::uint8_t imm = read_immediate(strm, true);
-            next_line(strm);
+            skip_space();
+            std::uint8_t imm = read_immediate(true);
+            next_line();
             return Inst(ty, imm);
         }
         }
 
-        parse_error("Unknown instruction");
+        throw ParseError(format_error("Unknown instruction"));
     }
 
-    std::vector<Inst> read_all(std::istream &strm) {
+    std::vector<Inst> AsmReader::read_all() {
         std::vector<Inst> result;
-        while (!finished(strm)) {
-            skip_space_and_newline(strm);
-            Inst m = read_next(strm);
+        while (!finished()) {
+            skip_space_and_newline();
+            Inst m = read_next();
             result.emplace_back(m);
         }
         return result;

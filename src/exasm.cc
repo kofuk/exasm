@@ -5,11 +5,17 @@
 #include "asmio.h"
 
 int main() {
+    exasm::AsmReader reader(std::cin);
+
     std::uint16_t addr = 0;
-    for (exasm::Inst &i : exasm::read_all(std::cin)) {
-        exasm::write_addr(std::cout, addr) << ' ';
-        i.print_bin(std::cout) << " // ";
-        std::cout << i << '\n';
-        addr += 2;
+    try {
+        for (exasm::Inst &i : reader.read_all()) {
+            exasm::write_addr(std::cout, addr) << ' ';
+            i.print_bin(std::cout) << " // ";
+            std::cout << i << '\n';
+            addr += 2;
+        }
+    } catch (exasm::ParseError &e) {
+        std::cerr << e.what() << '\n';
     }
 }

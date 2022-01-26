@@ -2,6 +2,7 @@
 #define ASMIO_H
 
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 namespace exasm {
@@ -70,9 +71,34 @@ namespace exasm {
     std::ostream &operator<<(std::ostream &out, InstType ty);
     std::ostream &operator<<(std::ostream &out, Inst &inst);
 
+    class ParseError : public std::runtime_error {
+    public:
+        ParseError(std::string msg) : std::runtime_error(msg) {}
+    };
+
+    class AsmReader {
+        long linum = 1;
+        std::istream &strm;
+
+        std::string format_error(std::string message = "");
+
+        InstType read_inst_type();
+        void next_line();
+        void skip_space();
+        void skip_space_and_newline();
+        bool finished();
+        std::uint8_t read_reg();
+        void must_read(char c);
+        std::uint8_t read_immediate(bool allow_sign);
+
+    public:
+        AsmReader(std::istream &strm) : strm(strm) {}
+
+        Inst read_next();
+        std::vector<Inst> read_all();
+    };
+
     std::ostream &write_addr(std::ostream &out, std::uint16_t num);
-    Inst read_next(std::istream &strm);
-    std::vector<Inst> read_all(std::istream &strm);
 } // namespace exasm
 
 #endif

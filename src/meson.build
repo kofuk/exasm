@@ -10,6 +10,7 @@ webas = custom_target(
     emcc, '-s', 'WASM=1', '-s', 'NO_EXIT_RUNTIME=1',
     '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
     '-s', 'EXPORTED_FUNCTIONS=["_free"]',
+    '-s', 'NO_DISABLE_EXCEPTION_CATCHING',
     '-o', '@OUTPUT@', '--shell-file', '@INPUT@',
   ],
   install : true,
