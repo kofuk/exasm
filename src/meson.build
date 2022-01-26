@@ -7,7 +7,7 @@ executable('emu', 'exemu.cc', link_with : [emulator_lib, asmio_lib])
 emcc = find_program('emcc')
 webas = custom_target(
   output : ['webas.html'],
-  input : ['wasm_shell.html', 'webas.cc', 'asmio.cc'],
+  input : ['wasm_shell_webas.html', 'webas.cc', 'asmio.cc'],
   command : [
     emcc, '-s', 'WASM=1', '-s', 'NO_EXIT_RUNTIME=1',
     '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
