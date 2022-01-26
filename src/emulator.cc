@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <string>
 
@@ -84,6 +85,7 @@ namespace exasm {
     }
 
     std::uint16_t Emulator::clock() {
+        int delay_slot_save = delay_slot;
         if (delay_slot >= 0) {
             if (delay_slot == 0) {
                 pc = branch_addr;
@@ -96,6 +98,16 @@ namespace exasm {
         if (exec_addr / 2 >= prog.size()) {
             throw ExecutionError("Program finished");
         }
+
+        auto bp = std::find(breakpoints.begin(), breakpoints.end(), exec_addr);
+        if (!breaked && bp != breakpoints.end()) {
+            breaked = true;
+            // restore state
+            delay_slot = delay_slot_save;
+            throw Breakpoint(exec_addr);
+        }
+        breaked = false;
+
         Inst inst = prog[exec_addr / 2];
         pc += 2;
 
@@ -211,5 +223,16 @@ namespace exasm {
         }
 
         return exec_addr;
+    }
+
+    void Emulator::set_breakpoint(std::uint16_t addr) {
+        auto pos = std::find(breakpoints.begin(), breakpoints.end(), addr);
+        if (pos == breakpoints.end()) {
+            breakpoints.push_back(addr);
+        }
+    }
+    void Emulator::remove_breakpoint(std::uint16_t addr) {
+        auto pos = std::find(breakpoints.begin(), breakpoints.end(), addr);
+        breakpoints.erase(pos);
     }
 } // namespace exasm

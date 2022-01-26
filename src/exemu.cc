@@ -7,8 +7,8 @@
 #include "emulator.h"
 
 namespace {
-    void pretty_print_mem(const std::array<std::uint8_t, 0x10000> &mem, int start = 0,
-                          int end = 0x10000) {
+    void pretty_print_mem(const std::array<std::uint8_t, 0x10000> &mem,
+                          int start = 0, int end = 0x10000) {
         start &= ~0x7;
         end &= ~0x7;
         for (int i = start; i < end; ++i) {
@@ -79,6 +79,9 @@ int main(int argc, char **argv) {
         } catch (exasm::ExecutionError &e) {
             std::cout << e.what() << '\n';
             return 1;
+        } catch (exasm::Breakpoint &bp) {
+            std::cout << "Breakpoint hit: addr=" << bp.get_addr() << '\n';
+            continue;
         }
         pretty_print_reg(emu.get_register());
         pretty_print_mem(emu.get_memory(), 0x34, 0x40);
