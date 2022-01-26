@@ -1,6 +1,8 @@
 asmio_lib = static_library('asmio', 'asmio.cc')
+emulator_lib = static_library('emulator', 'emulator.cc')
 
 executable('as', 'exasm.cc', link_with : asmio_lib)
+executable('emu', 'exemu.cc', link_with : [emulator_lib, asmio_lib])
 
 emcc = find_program('emcc')
 webas = custom_target(
