@@ -310,6 +310,8 @@ namespace exasm {
             }
             if (c == 'x') {
                 base = 16;
+            } else {
+                strm.unget();
             }
         } else if ('1' <= c && c <= '9') {
             result = c - '0';
