@@ -448,7 +448,7 @@ namespace exasm {
         } else if (mem_inst) {
             return out << "r" << +rd << ", (r" << +rs << ")";
         } else if (jump_inst) {
-            return write_hex(out << ' ', imm, true);
+            return write_hex(out, imm, true);
         }
         return out << "<unknown>";
     }

@@ -1,0 +1,12 @@
+nop
+mov r3, r5
+not r1, r7
+xor r3, r5
+add r1, r7
+sub r3, r5
+sl8 r1, r7
+sr8 r3, r5
+sl r1, r7
+sr r3, r5
+and r1, r7
+or r3, r5

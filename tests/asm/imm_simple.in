@@ -1,0 +1,15 @@
+addi r3, 0
+addi r3, 101
+addi r3, 0x7d
+andi r3, 0
+andi r3, 101
+andi r3, 0xde
+ori r3, 0
+ori r3, 101
+ori r3, 0xde
+lli r3, 0
+lli r3, 101
+lli r3, 0xde
+lui r3, 0
+lui r3, 101
+lui r3, 0xde

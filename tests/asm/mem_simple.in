@@ -1,0 +1,4 @@
+sw r3, (r5)
+lw r1, (r7)
+sbu r3, (r5)
+lbu r1, (r7)

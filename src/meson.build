@@ -41,3 +41,29 @@ else
   executable('as', 'exasm.cc', link_with : asmio_lib)
   executable('emu', 'exemu.cc', link_with : [emulator_lib, asmio_lib])
 endif
+
+if meson.can_run_host_binaries()
+  test_runner = executable('exasm_test_runner', 'exasm_test.cc', link_with : asmio_lib)
+
+  test('register arith', test_runner,
+       args : ['../tests/asm/reg_arith_simple.in',
+               '../tests/asm/reg_arith_simple.out'])
+  test('immediates', test_runner,
+       args : ['../tests/asm/imm_simple.in',
+               '../tests/asm/imm_simple.out'])
+  test('signed immediates', test_runner,
+       args : ['../tests/asm/imm_sign.in',
+               '../tests/asm/imm_sign.out'])
+  test('branch', test_runner,
+       args : ['../tests/asm/branch_simple.in',
+               '../tests/asm/branch_simple.out'])
+  test('mem', test_runner,
+       args : ['../tests/asm/mem_simple.in',
+               '../tests/asm/mem_simple.out'])
+
+  if get_option('ex_inst_t').enabled()
+    test('extension T', test_runner,
+         args : ['../tests/asm/ex_t.in',
+                 '../tests/asm/ex_t.out'])
+  endif
+endif
