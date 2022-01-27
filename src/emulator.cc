@@ -127,7 +127,7 @@ namespace exasm {
             break;
 #ifdef EXTEND_T
         case InstType::SR4:
-            reg[inst.rd] = reg[inst.rs] << 4;
+            reg[inst.rd] = reg[inst.rs] >> 4;
             break;
 #endif
         case InstType::MOV:
@@ -149,13 +149,13 @@ namespace exasm {
             reg[inst.rd] = reg[inst.rs] << 8;
             break;
         case InstType::SR8:
-            reg[inst.rd] = reg[inst.rs] << 8;
+            reg[inst.rd] = reg[inst.rs] >> 8;
             break;
         case InstType::SL:
             reg[inst.rd] = reg[inst.rs] << 1;
             break;
         case InstType::SR:
-            reg[inst.rd] = reg[inst.rs] << 1;
+            reg[inst.rd] = reg[inst.rs] >> 1;
             break;
         case InstType::AND:
             reg[inst.rd] &= reg[inst.rs];
