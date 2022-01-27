@@ -91,15 +91,16 @@ namespace exasm {
         void next_line();
         void skip_space();
         void skip_space_and_newline();
-        bool finished();
-        std::uint8_t read_reg();
-        void must_read(char c);
+        std::uint8_t read_reg(std::string king);
+        void must_read(char c, std::string context);
         std::uint8_t read_immediate(bool allow_sign);
 
     public:
         AsmReader(std::istream &strm) : strm(strm) {}
 
         Inst read_next();
+        void try_recover();
+        bool finished();
         std::vector<Inst> read_all();
     };
 

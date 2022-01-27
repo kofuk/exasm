@@ -1,4 +1,6 @@
 #include "asmio.h"
+#include <cctype>
+#include <string>
 
 namespace exasm {
     namespace {
@@ -255,14 +257,17 @@ namespace exasm {
         return false;
     }
 
-    std::uint8_t AsmReader::read_reg() {
+    std::uint8_t AsmReader::read_reg(std::string kind) {
         char c;
         strm.get(c);
         if (strm.fail()) {
             throw ParseError(format_error("Register expected, but got EOF"));
         }
         if (c != 'r') {
-            throw ParseError(format_error("Illegal register syntax"));
+            if (!kind.empty()) {
+                kind[0] = std::toupper(kind[0]);
+            }
+            throw ParseError(format_error(kind + " register name expected"));
         }
         strm.get(c);
         if (strm.fail()) {
@@ -279,14 +284,19 @@ namespace exasm {
         throw ParseError(format_error("Illegal register"));
     }
 
-    void AsmReader::must_read(char c) {
+    void AsmReader::must_read(char c, std::string context) {
         char d;
         strm.get(d);
         if (strm.fail()) {
             throw ParseError(format_error("Unexpected EOF"));
         }
         if (d != c) {
-            throw ParseError(format_error("Unexpected char"));
+            std::string err_msg = "Expects '";
+            err_msg.push_back(c);
+            err_msg.push_back('\'');
+            err_msg.push_back(' ');
+            err_msg += context;
+            throw ParseError(format_error(err_msg));
         }
     }
 
@@ -487,6 +497,7 @@ namespace exasm {
     }
 
     Inst AsmReader::read_next() {
+        skip_space_and_newline();
         InstType ty = read_inst_type();
         switch (ty) {
         case InstType::NOP:
@@ -507,11 +518,11 @@ namespace exasm {
         case InstType::AND:
         case InstType::OR: {
             skip_space();
-            std::uint8_t rd = read_reg();
+            std::uint8_t rd = read_reg("destination");
             skip_space();
-            must_read(',');
+            must_read(',', "after destination register");
             skip_space();
-            std::uint8_t rs = read_reg();
+            std::uint8_t rs = read_reg("source");
             next_line();
             return Inst(ty, rd, rs, true);
         }
@@ -520,15 +531,15 @@ namespace exasm {
         case InstType::SBU:
         case InstType::LBU: {
             skip_space();
-            std::uint8_t rd = read_reg();
+            std::uint8_t rd = read_reg("destination");
             skip_space();
-            must_read(',');
+            must_read(',', "after destination register");
             skip_space();
-            must_read('(');
+            must_read('(', "before address register");
             skip_space();
-            std::uint8_t rs = read_reg();
+            std::uint8_t rs = read_reg("source");
             skip_space();
-            must_read(')');
+            must_read(')', "before address register");
             next_line();
             return Inst(ty, rd, rs, false);
         }
@@ -542,9 +553,9 @@ namespace exasm {
         case InstType::BMI:
         case InstType::BPL: {
             skip_space();
-            std::uint8_t rd = read_reg();
+            std::uint8_t rd = read_reg("condition");
             skip_space();
-            must_read(',');
+            must_read(',', "after condition register");
             skip_space();
             bool sign_allowed = ty == InstType::ADDI || ty == InstType::BEQZ ||
                                 ty == InstType::BNEZ || ty == InstType::BMI ||
@@ -564,10 +575,11 @@ namespace exasm {
         throw ParseError(format_error("Unknown instruction"));
     }
 
+    void AsmReader::try_recover() { next_line(); }
+
     std::vector<Inst> AsmReader::read_all() {
         std::vector<Inst> result;
         while (!finished()) {
-            skip_space_and_newline();
             Inst m = read_next();
             result.emplace_back(m);
         }

@@ -134,7 +134,7 @@
                  console.log(text);
                  return;
              }
-             showError(text);
+             appendError(text);
          },
          setStatus: function(text) {
              if (text) console.log(text);
@@ -145,6 +145,10 @@
 
      const showError = (text) => {
          document.getElementById('err').innerText = text;
+     };
+
+     const appendError = (text) => {
+         document.getElementById('err').innerText += text + '\n';
      };
 
      const showStatus = (text) => {

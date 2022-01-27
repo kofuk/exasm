@@ -108,10 +108,18 @@ __attribute__((used)) exasm::Emulator *init_emulator(char *memfile,
     std::istringstream prog_strm(std::string(prog, prog + prog_len));
     exasm::AsmReader reader(prog_strm);
     std::vector<exasm::Inst> insts;
-    try {
-        insts = reader.read_all();
-    } catch (exasm::ParseError &e) {
-        std::cerr << e.what() << '\n';
+    bool has_error = false;
+    while (!reader.finished()) {
+        try {
+            exasm::Inst m = reader.read_next();
+            insts.emplace_back(m);
+        } catch (exasm::ParseError &e) {
+            std::cerr << e.what() << '\n';
+            has_error = true;
+            reader.try_recover();
+        }
+    }
+    if (has_error) {
         return nullptr;
     }
 
