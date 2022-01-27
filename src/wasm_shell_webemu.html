@@ -32,6 +32,7 @@
       Memory: <input type="text" size="3" id="mem_start" value="0x34" />--<input type="text" size="3" id="mem_end" value="0x40" /><input type="button" value="Set range" id="set_range" />
       <input type="button" value="Reverse next (←)" id="reverse_clock" />
       <input type="button" value="Next clock (→)" id="clock" />
+      <input type="button" value="Copy assembled program" id="copy_prog_mem" />
       <div style="background-color: yellow" id="err"></div>
     </div>
 
@@ -89,14 +90,14 @@
             <thead>
               <tr>
                 <th></th>
-                <th>x0</th>
-                <th>x1</th>
-                <th>x2</th>
-                <th>x3</th>
-                <th>x4</th>
-                <th>x5</th>
-                <th>x6</th>
-                <th>x7</th>
+                <th>x0<br>x8</th>
+                <th>x1<br>x9</th>
+                <th>x2<br>xa</th>
+                <th>x3<br>xb</th>
+                <th>x4<br>xc</th>
+                <th>x5<br>xd</th>
+                <th>x6<br>xe</th>
+                <th>x7<br>xf</th>
               </tr>
             </thead>
             <tbody id="mem_table_body">
@@ -376,6 +377,20 @@
                  .addEventListener('click', () => {
                      breaked = false;
                      reverseClock();
+                 });
+         document.getElementById('copy_prog_mem')
+                 .addEventListener('click', () => {
+                     if (emulator === 0) {
+                         return;
+                     }
+                     const prog = Module.ccall('dump_program', 'string', ['number'],
+                                               [emulator]);
+                     const tmp = document.createElement('textarea');
+                     tmp.value = prog;
+                     document.body.appendChild(tmp);
+                     tmp.select();
+                     document.execCommand('copy');
+                     document.body.removeChild(tmp);
                  });
          document.getElementById('apply_reg')
                  .addEventListener('click', () => {
