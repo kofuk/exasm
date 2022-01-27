@@ -127,56 +127,56 @@ namespace exasm {
             break;
 #ifdef EXTEND_T
         case InstType::SR4:
-            reg[inst.rd] = reg[inst.rs] >> 4;
+            set_register(inst.rd, reg[inst.rs] >> 4);
             break;
 #endif
         case InstType::MOV:
-            reg[inst.rd] = reg[inst.rs];
+            set_register(inst.rd, reg[inst.rs]);
             break;
         case InstType::NOT:
-            reg[inst.rd] = ~reg[inst.rs];
+            set_register(inst.rd, ~reg[inst.rs]);
             break;
         case InstType::XOR:
-            reg[inst.rd] ^= reg[inst.rs];
+            set_register(inst.rd, reg[inst.rd] ^ reg[inst.rs]);
             break;
         case InstType::ADD:
-            reg[inst.rd] += reg[inst.rs];
+            set_register(inst.rd, reg[inst.rd] + reg[inst.rs]);
             break;
         case InstType::SUB:
-            reg[inst.rd] -= reg[inst.rs];
+            set_register(inst.rd, reg[inst.rd] - reg[inst.rs]);
             break;
         case InstType::SL8:
-            reg[inst.rd] = reg[inst.rs] << 8;
+            set_register(inst.rd, reg[inst.rs] << 8);
             break;
         case InstType::SR8:
-            reg[inst.rd] = reg[inst.rs] >> 8;
+            set_register(inst.rd, reg[inst.rs] >> 8);
             break;
         case InstType::SL:
-            reg[inst.rd] = reg[inst.rs] << 1;
+            set_register(inst.rd, reg[inst.rs] << 1);
             break;
         case InstType::SR:
-            reg[inst.rd] = reg[inst.rs] >> 1;
+            set_register(inst.rd, reg[inst.rs] >> 1);
             break;
         case InstType::AND:
-            reg[inst.rd] &= reg[inst.rs];
+            set_register(inst.rd, reg[inst.rd] & reg[inst.rs]);
             break;
         case InstType::OR:
-            reg[inst.rd] |= reg[inst.rs];
+            set_register(inst.rd, reg[inst.rd] | reg[inst.rs]);
             break;
         case InstType::ADDI:
-            reg[inst.rd] += sign_extend(inst.imm);
-            break;
+            set_register(inst.rd, reg[inst.rd] + sign_extend(inst.imm));
+             break;
         case InstType::ANDI:
-            reg[inst.rd] &= inst.imm;
+            set_register(inst.rd, reg[inst.rd] & inst.imm);
             break;
         case InstType::ORI:
-            reg[inst.rd] |= inst.imm;
+            set_register(inst.rd, reg[inst.rd] | inst.imm);
             break;
         case InstType::LLI:
-            reg[inst.rd] = inst.imm;
+            set_register(inst.rd, inst.imm);
             break;
         case InstType::LUI:
-            reg[inst.rd] = inst.imm << 8;
+            set_register(inst.rd, inst.imm << 8);
             break;
         case InstType::SW:
             if (reg[inst.rs] % 2 != 0) {
@@ -185,8 +185,8 @@ namespace exasm {
             }
             {
                 std::uint16_t addr = reg[inst.rs];
-                mem[addr] = static_cast<std::uint8_t>(reg[inst.rd] >> 8);
-                mem[addr + 1] = static_cast<std::uint8_t>(reg[inst.rd] & 0xFF);
+                set_memory(addr, static_cast<std::uint8_t>(reg[inst.rd] >> 8));
+                set_memory(addr + 1, static_cast<std::uint8_t>(reg[inst.rd] & 0xFF));
             }
             break;
         case InstType::LW:
@@ -196,15 +196,16 @@ namespace exasm {
             }
             {
                 std::uint16_t addr = reg[inst.rs];
-                reg[inst.rd] = static_cast<std::uint16_t>(mem[addr]) << 8;
-                reg[inst.rd] |= static_cast<std::uint16_t>(mem[addr + 1]);
+                std::uint16_t val = static_cast<std::uint16_t>(mem[addr]) << 8;
+                val |= static_cast<std::uint16_t>(mem[addr + 1]);
+                set_register(inst.rd, val);
             }
             break;
         case InstType::SBU:
-            mem[reg[inst.rs]] = static_cast<std::uint8_t>(reg[inst.rd]);
+            set_memory(reg[inst.rs], static_cast<std::uint8_t>(reg[inst.rd]));
             break;
         case InstType::LBU:
-            reg[inst.rd] = static_cast<std::uint8_t>(mem[reg[inst.rs]]);
+            set_register(inst.rd, static_cast<std::uint8_t>(mem[reg[inst.rs]]));
             break;
         case InstType::BEQZ:
             if (reg[inst.rd] == 0) {

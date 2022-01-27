@@ -36,6 +36,8 @@ namespace exasm {
         bool is_branch_delayed = false;
         std::uint16_t delayed_addr;
 
+        void set_pc(std::uint16_t pc) { this->pc = pc; }
+
     public:
         Emulator() {
             std::random_device seed_gen;
@@ -49,16 +51,26 @@ namespace exasm {
             reg.fill(0);
         }
 
-        std::array<std::uint8_t, 0x10000> &get_memory() { return mem; }
+        const std::array<std::uint8_t, 0x10000> &get_memory() const {
+            return mem;
+        }
 
-        std::array<std::uint16_t, 8> &get_register() { return reg; }
+        void set_memory(std::uint16_t addr, std::uint8_t val) {
+            mem[addr] = val;
+        }
+
+        const std::array<std::uint16_t, 8> &get_register() const { return reg; }
+
+        void set_register(std::uint8_t regnum, std::uint16_t val) {
+            reg[regnum] = val;
+        }
 
         void set_program(std::vector<Inst> &&prog) {
             this->prog = std::move(prog);
         }
 
         void set_program(std::vector<Inst> &prog) { this->prog = prog; }
-        const std::vector<Inst> &get_program() { return this->prog; }
+        const std::vector<Inst> &get_program() const { return this->prog; }
 
         void load_memfile(std::istream &strm);
         void set_breakpoint(std::uint16_t addr);

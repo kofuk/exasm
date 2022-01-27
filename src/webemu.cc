@@ -41,7 +41,7 @@ __attribute__((used)) std::uint16_t get_register_value(exasm::Emulator *emu,
     return emu->get_register()[number];
 }
 
-__attribute__((used)) std::uint8_t *get_memory(exasm::Emulator *emu) {
+__attribute__((used)) const std::uint8_t *get_memory(exasm::Emulator *emu) {
     return emu->get_memory().data();
 }
 
@@ -63,14 +63,16 @@ __attribute__((used)) void set_register_value(exasm::Emulator *emu, int number,
     if (number < 0 || 7 < number) {
         return;
     }
-    emu->get_register()[number] = val;
+    emu->set_register(number, val);
 }
 
 __attribute__((used)) void set_mem_value(exasm::Emulator *emu,
                                          std::uint8_t *new_val, std::uint16_t n,
                                          std::uint16_t base_addr) {
     for (int i = 0; i < n; ++i) {
-        emu->get_memory()[base_addr + i] = new_val[i];
+        if (emu->get_memory()[base_addr + i] != new_val[i]) {
+            emu->set_memory(base_addr + i, new_val[i]);
+        }
     }
 }
 
