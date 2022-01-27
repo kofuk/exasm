@@ -248,8 +248,10 @@
              return;
          }
 
-         const prog = Module.ccall('dump_program', 'string', ['number'],
+         const progPtr = Module.ccall('dump_program', 'number', ['number'],
                                    [emulator]);
+         const prog = getStringFromHeap(progPtr);
+         Module._free(progPtr);
 
          const traceBody = document.getElementById('trace_body');
          traceBody.innerHTML = '';
@@ -294,6 +296,14 @@
              Module.HEAPU8[i + offset] = data[i];
          }
          return [offset, data.length];
+     };
+
+     const getStringFromHeap = (offset) => {
+         let len;
+         for (len = 0; Module.HEAPU8[offset + len] !== 0; len++) {}
+         const data = Module.HEAPU8.subarray(offset, offset + len);
+         const decoder = new TextDecoder();
+         return decoder.decode(data);
      };
 
      let breaked = false;
@@ -345,7 +355,7 @@
          document.getElementById('prog_init')
                  .addEventListener('click', () => {
                      if (emulator !== 0) {
-                         Module._free(emulator);
+                         Module.ccall('destroy_emulator', 'number', ['number'], [emulator])
                          emulator = 0;
                      }
 
@@ -388,8 +398,10 @@
                          showError('Program not loaded');
                          return;
                      }
-                     const prog = Module.ccall('dump_program', 'string', ['number'],
+                     const progPtr = Module.ccall('dump_program', 'number', ['number'],
                                                [emulator]);
+                     const prog = getStringFromHeap(progPtr);
+                     Module._free(progPtr);
                      const tmp = document.createElement('textarea');
                      tmp.value = prog;
                      document.body.appendChild(tmp);
@@ -403,8 +415,10 @@
                          showError('Program not loaded');
                          return;
                      }
-                     const mem = Module.ccall('serialize_mem', 'string', ['number'],
+                     const memPtr = Module.ccall('serialize_mem', 'number', ['number'],
                                                [emulator]);
+                     const mem = getStringFromHeap(memPtr);
+                     Module._free(memPtr);
                      const blob = new Blob([mem], {type: "text/plain"});
                      const url = URL.createObjectURL(blob);
                      const link = document.createElement("a");

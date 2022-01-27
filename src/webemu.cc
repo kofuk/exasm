@@ -128,6 +128,10 @@ __attribute__((used)) exasm::Emulator *init_emulator(char *memfile,
     return emu;
 }
 
+__attribute__((used)) void destroy_emulator(exasm::Emulator *emu) {
+    delete emu;
+}
+
 __attribute__((used)) char *serialize_mem(exasm::Emulator *emu) {
     std::ostringstream strm;
     strm << "{int i;static unsigned char t[]={";
