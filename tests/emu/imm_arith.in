@@ -1,0 +1,14 @@
+lli r0, 0x30
+
+addi r1, 0x7b # Check addi (positive)
+sw r1, (r0)
+addi r0, 2
+
+addi r1, -57 # Check addi (negative)
+sw r1, (r0)
+addi r0, 2
+
+lui r1, 0xde
+ori r1, 0xad
+andi r1, 0xff
+sw r1, (r0)

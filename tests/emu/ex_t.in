@@ -1,0 +1,6 @@
+lli r0, 0x30
+
+lui r1, 0xbe
+ori r1, 0xef
+sr4 r1, r1
+sw r1, (r0)

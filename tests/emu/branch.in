@@ -1,0 +1,52 @@
+lli r0, 0x30
+lli r2, 2
+
+beqz r1, 4 # Check beqz (positive)
+nop
+lli r1, 1
+sw r1, (r0)
+addi r0, 2
+
+lli r1, 1 # Check bnez (positive)
+bnez r1, 4
+nop
+lli r1, 2
+sw r1, (r0)
+addi r0, 2
+
+lli r1, 0 # Check beqz (negative)
+addi r1, 1
+beqz r1, -4
+nop
+sw r1, (r0)
+addi r0, 2
+
+addi r2, -1 # Check bnez (negative)
+bnez r2, -4
+nop
+sw r2, (r0)
+addi r0, 2
+
+addi r2, -2 # Check bmi
+addi r2, 1
+bmi r2, -4
+nop
+sw r2, (r0)
+addi r0, 2
+
+addi r1, -1 # Check bpl
+bpl r1, -4
+nop
+sw r1, (r0)
+addi r0, 2
+
+lli r1, 0 # Check j
+j 4
+nop
+lli r1, 1
+sw r1, (r0)
+addi r0, 2
+
+bmi r1, 2 # Check delay slot
+addi r1, -1
+sw r1, (r0)

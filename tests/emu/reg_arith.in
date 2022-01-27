@@ -1,0 +1,77 @@
+lli r0, 0x30
+
+lui r1, 0xde # Check mov
+ori r1, 0xad
+mov r2, r1
+sw r2, (r0)
+addi r0, 2
+
+lui r1, 0x41 # Check not
+ori r1, 0x10
+not r1, r1
+sw r1, (r0)
+addi r0, 2
+
+lui r1, 0xaa # Check xor
+ori r1, 0xaa
+lui r2, 0x92
+ori r2, 0x49
+xor r1, r2
+sw r1, (r0)
+addi r0, 2
+
+lui r1, 0x30 # Check add
+ori r1, 0x39
+lui r2, 0x5b
+ori r2, 0xa0
+add r1, r2
+sw r1, (r0)
+addi r0, 2
+
+lui r1, 0x5b # Check sub
+ori r1, 0xa0
+lui r2, 0x30
+ori r2, 0x39
+sub r1, r2
+sw r1, (r0)
+addi r0, 2
+
+lui r1, 0xde # Check sl8
+ori r1, 0xad
+sl8 r2, r1
+sw r2, (r0)
+addi r0, 2
+
+lui r1, 0xbe # Check sr8
+ori r1, 0xef
+sr8 r2, r1
+sw r2, (r0)
+addi r0, 2
+
+lui r1, 0xde # Check sl
+ori r1, 0xad
+sl r2, r1
+sw r2, (r0)
+addi r0, 2
+
+lui r1, 0xbe # Check sr
+ori r1, 0xef
+sr r2, r1
+sw r2, (r0)
+addi r0, 2
+
+lui r1, 0xaa # Check and
+ori r1, 0xaa
+lui r2, 0x92
+ori r2, 0x49
+and r1, r2
+sw r1, (r0)
+addi r0, 2
+
+lui r1, 0xaa # Check or
+ori r1, 0xaa
+lui r2, 0x92
+ori r2, 0x49
+or r1, r2
+sw r1, (r0)
+addi r0, 2
