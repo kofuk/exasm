@@ -1,5 +1,5 @@
-asmio_lib = static_library('asmio', 'asmio.cc', cpp_args : '-DEXTEND_T')
-emulator_lib = static_library('emulator', 'emulator.cc', cpp_args : '-DEXTEND_T')
+asmio_lib = static_library('asmio', 'asmio.cc')
+emulator_lib = static_library('emulator', 'emulator.cc')
 
 if host_machine.system() == 'emscripten'
   empp = find_program('em++')

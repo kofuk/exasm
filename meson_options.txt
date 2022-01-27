@@ -1,0 +1,6 @@
+option(
+  'ex_inst_t',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Enable extension instructions (T)'
+)
