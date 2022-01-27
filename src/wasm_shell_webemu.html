@@ -313,7 +313,7 @@
              document.getElementById('break' + breakAddr).parentNode.parentNode
                      .classList.add('break');
              breaked = true;
-             document.getElementById('clock').value = 'Continue';
+             document.getElementById('clock').value = 'Next clock';
          } else {
              blinkCurrentLine(addr);
              document.getElementById('exec_addr').value = '0x' + addr.toString(16);
@@ -327,6 +327,9 @@
              showError('Program not loaded');
              return;
          }
+
+         showError('');
+
          const addr = Module.ccall('reverse_next_clock', 'number', ['number'],
                                    [emulator]);
          if (addr < 0) {
@@ -457,6 +460,10 @@
      });
 
      document.body.addEventListener('keydown', e => {
+         if (e.target.nodeName === 'TEXTAREA' ||
+             (e.target.nodeName === 'INPUT' && e.target.type === 'text')) {
+             return;
+         }
          if (e.key === 'ArrowRight') {
              if (breaked) {
                  return;
@@ -464,6 +471,7 @@
 
              clock();
          } else if (e.key === 'ArrowLeft') {
+             breaked = false;
              reverseClock();
          }
      });
