@@ -33,8 +33,8 @@ namespace exasm {
         bool breaked = false;
 
         std::uint16_t pc = 0;
-        int delay_slot = -1;
-        std::uint16_t branch_addr = 0;
+        bool is_branch_delayed = false;
+        std::uint16_t delayed_addr;
 
     public:
         Emulator() {

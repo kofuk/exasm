@@ -455,6 +455,12 @@ namespace exasm {
         return out;
     }
 
+    bool Inst::needs_delay_slot() const {
+        return inst == InstType::BEQZ || inst == InstType::BNEZ ||
+               inst == InstType::BMI || inst == InstType::BPL ||
+               inst == InstType::J;
+    }
+
     std::ostream &write_addr(std::ostream &out, std::uint16_t num) {
         out << "@";
         for (int i = 1; i >= 0; --i) {

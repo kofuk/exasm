@@ -85,31 +85,42 @@ namespace exasm {
     }
 
     std::uint16_t Emulator::clock() {
-        int delay_slot_save = delay_slot;
-        if (delay_slot >= 0) {
-            if (delay_slot == 0) {
-                pc = branch_addr;
-            }
-            --delay_slot;
-        }
+        std::uint16_t delayed_addr_save = delayed_addr;
+        bool is_branch_delayed_save = is_branch_delayed;
 
         std::uint16_t exec_addr = pc;
+        if (is_branch_delayed) {
+            exec_addr = delayed_addr;
+        }
 
         if (exec_addr / 2 >= prog.size()) {
             throw ExecutionError("Program finished");
         }
 
+        Inst inst = prog[exec_addr / 2];
+        if (!is_branch_delayed && inst.needs_delay_slot()) {
+            delayed_addr = pc;
+            is_branch_delayed = true;
+            exec_addr = pc + 2;
+            if (exec_addr / 2 >= prog.size()) {
+                throw ExecutionError("Program finished");
+            }
+            inst = prog[exec_addr / 2];
+        } else if (is_branch_delayed) {
+            is_branch_delayed = false;
+        }
+
+        pc += 2;
+
         auto bp = std::find(breakpoints.begin(), breakpoints.end(), exec_addr);
         if (!breaked && bp != breakpoints.end()) {
             breaked = true;
             // restore state
-            delay_slot = delay_slot_save;
+            delayed_addr = delayed_addr_save;
+            is_branch_delayed = is_branch_delayed_save;
             throw Breakpoint(exec_addr);
         }
         breaked = false;
-
-        Inst inst = prog[exec_addr / 2];
-        pc += 2;
 
         switch (inst.inst) {
         case InstType::NOP:
@@ -192,31 +203,26 @@ namespace exasm {
             break;
         case InstType::BEQZ:
             if (reg[inst.rd] == 0) {
-                delay_slot = 1;
-                branch_addr = pc + sign_extend(inst.imm);
+                pc = exec_addr + 2 + sign_extend(inst.imm);
             }
             break;
         case InstType::BNEZ:
             if (reg[inst.rd] != 0) {
-                delay_slot = 1;
-                branch_addr = pc + sign_extend(inst.imm);
+                pc = exec_addr + 2 + sign_extend(inst.imm);
             }
             break;
         case InstType::BMI:
             if (reg[inst.rd] >> 15 != 0) {
-                delay_slot = 1;
-                branch_addr = pc + sign_extend(inst.imm);
+                pc = exec_addr + 2 + sign_extend(inst.imm);
             }
             break;
         case InstType::BPL:
             if (reg[inst.rd] >> 15 == 0) {
-                delay_slot = 1;
-                branch_addr = pc + sign_extend(inst.imm);
+                pc = exec_addr + 2 + sign_extend(inst.imm);
             }
             break;
         case InstType::J:
-            delay_slot = 1;
-            branch_addr = pc + sign_extend(inst.imm);
+            pc = exec_addr + 2 + sign_extend(inst.imm);
             break;
         default:
             throw ExecutionError("Unsupported instruction");

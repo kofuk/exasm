@@ -66,6 +66,8 @@ namespace exasm {
         std::ostream &print_asm_operand(std::ostream &out) const;
 
         std::ostream &print_bin(std::ostream &out) const;
+
+        bool needs_delay_slot() const;
     };
 
     std::ostream &operator<<(std::ostream &out, InstType ty);
