@@ -32,3 +32,5 @@ webas = custom_target(
   install : true,
   install_dir : '/opt/exasm',
 )
+
+install_data('bcralnit.js', install_dir : '/opt/exasm')
