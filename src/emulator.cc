@@ -125,6 +125,11 @@ namespace exasm {
         switch (inst.inst) {
         case InstType::NOP:
             break;
+#ifdef EXTEND_T
+        case InstType::SR4:
+            reg[inst.rd] = reg[inst.rs] << 4;
+            break;
+#endif
         case InstType::MOV:
             reg[inst.rd] = reg[inst.rs];
             break;

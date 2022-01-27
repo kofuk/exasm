@@ -1,5 +1,5 @@
-asmio_lib = static_library('asmio', 'asmio.cc')
-emulator_lib = static_library('emulator', 'emulator.cc')
+asmio_lib = static_library('asmio', 'asmio.cc', cpp_args : '-DEXTEND_T')
+emulator_lib = static_library('emulator', 'emulator.cc', cpp_args : '-DEXTEND_T')
 
 executable('as', 'exasm.cc', link_with : asmio_lib)
 executable('emu', 'exemu.cc', link_with : [emulator_lib, asmio_lib])
@@ -13,6 +13,7 @@ webas = custom_target(
     '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
     '-s', 'EXPORTED_FUNCTIONS=["_free"]',
     '-s', 'NO_DISABLE_EXCEPTION_CATCHING',
+    '-DEXTEND_T',
     '-o', '@OUTPUT@', '--shell-file', '@INPUT@',
   ],
   install : true,
@@ -27,6 +28,7 @@ webas = custom_target(
     '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
     '-s', 'EXPORTED_FUNCTIONS=["_free"]',
     '-s', 'NO_DISABLE_EXCEPTION_CATCHING',
+    '-DEXTEND_T',
     '-o', '@OUTPUT@', '--shell-file', '@INPUT@',
   ],
   install : true,

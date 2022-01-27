@@ -32,6 +32,10 @@ namespace exasm {
         std::ostream &write_reg_arith_and_mem_op_bin(std::ostream &out,
                                                      InstType ty) {
             switch (ty) {
+#ifdef EXTEND_T
+            case InstType::SR4:
+                return out << "01100";
+#endif
             case InstType::MOV:
                 return out << "00001";
             case InstType::NOT:
@@ -137,6 +141,10 @@ namespace exasm {
 
         if (inst == "nop") {
             return InstType::NOP;
+#ifdef EXTEND_T
+        } else if (inst == "sr4") {
+            return InstType::SR4;
+#endif
         } else if (inst == "mov") {
             return InstType::MOV;
         } else if (inst == "not") {
@@ -350,6 +358,10 @@ namespace exasm {
         switch (ty) {
         case InstType::NOP:
             return out << "nop";
+#ifdef EXTEND_T
+        case InstType::SR4:
+            return out << "sr4";
+#endif
         case InstType::MOV:
             return out << "mov";
         case InstType::NOT:
@@ -480,6 +492,9 @@ namespace exasm {
         case InstType::NOP:
             next_line();
             return Inst();
+#ifdef EXTEND_T
+        case InstType::SR4:
+#endif
         case InstType::MOV:
         case InstType::NOT:
         case InstType::XOR:

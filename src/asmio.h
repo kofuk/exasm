@@ -33,6 +33,9 @@ namespace exasm {
         BMI,
         BPL,
         J,
+#ifdef EXTEND_T
+        SR4,
+#endif
     };
 
     class Inst {
