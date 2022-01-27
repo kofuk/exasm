@@ -264,7 +264,7 @@ namespace exasm {
             if (exec_history.empty()) {
                 throw std::logic_error("Broken exec_history");
             }
-            ExecHistory &eh = exec_history.back();
+            ExecHistory eh = exec_history.back();
             exec_history.pop_back();
             switch (eh.type) {
             case ExecHistoryType::CHANGE_PC:

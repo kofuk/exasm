@@ -126,9 +126,7 @@ namespace exasm {
 
         void set_memory(std::uint16_t addr, std::uint8_t val) {
             if (enable_exec_history) {
-                if (mem[addr] != val) {
-                    record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
-                }
+                record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
             }
 
             mem[addr] = val;
@@ -138,9 +136,7 @@ namespace exasm {
 
         void set_register(std::uint8_t regnum, std::uint16_t val) {
             if (enable_exec_history) {
-                if (reg[regnum] != val) {
-                    record_exec_history(ExecHistory::of_change_reg(regnum, reg[regnum]));
-                }
+                record_exec_history(ExecHistory::of_change_reg(regnum, reg[regnum]));
             }
 
             reg[regnum] = val;
