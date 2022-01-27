@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 
 #include "asmio.h"
@@ -110,6 +111,11 @@ namespace exasm {
             is_branch_delayed = false;
         }
 
+        if (enable_exec_history) {
+            record_exec_history(ExecHistory::of_change_pc(
+                pc, delayed_addr_save, is_branch_delayed_save));
+        }
+
         pc += 2;
 
         auto bp = std::find(breakpoints.begin(), breakpoints.end(), exec_addr);
@@ -165,7 +171,7 @@ namespace exasm {
             break;
         case InstType::ADDI:
             set_register(inst.rd, reg[inst.rd] + sign_extend(inst.imm));
-             break;
+            break;
         case InstType::ANDI:
             set_register(inst.rd, reg[inst.rd] & inst.imm);
             break;
@@ -186,7 +192,8 @@ namespace exasm {
             {
                 std::uint16_t addr = reg[inst.rs];
                 set_memory(addr, static_cast<std::uint8_t>(reg[inst.rd] >> 8));
-                set_memory(addr + 1, static_cast<std::uint8_t>(reg[inst.rd] & 0xFF));
+                set_memory(addr + 1,
+                           static_cast<std::uint8_t>(reg[inst.rd] & 0xFF));
             }
             break;
         case InstType::LW:
@@ -246,5 +253,50 @@ namespace exasm {
     void Emulator::remove_breakpoint(std::uint16_t addr) {
         auto pos = std::find(breakpoints.begin(), breakpoints.end(), addr);
         breakpoints.erase(pos);
+    }
+
+    std::uint16_t Emulator::reverse_next_clock() {
+        if (!enable_exec_history) {
+            throw std::logic_error("Emulator::reverse_next_clock is available "
+                                   "only if exec_history is enabled");
+        }
+        for (;;) {
+            if (exec_history.empty()) {
+                throw std::logic_error("Broken exec_history");
+            }
+            ExecHistory &eh = exec_history.back();
+            exec_history.pop_back();
+            switch (eh.type) {
+            case ExecHistoryType::CHANGE_PC:
+                pc = eh.event_info.change_pc.old_pc;
+                delayed_addr = eh.event_info.change_pc.old_delayed_addr;
+                is_branch_delayed =
+                    eh.event_info.change_pc.old_is_branch_delayed;
+                goto end;
+            case ExecHistoryType::CHANGE_MEM:
+                mem[eh.event_info.change_mem.addr] =
+                    eh.event_info.change_mem.old_val;
+                break;
+            case ExecHistoryType::CHANGE_REG:
+                reg[eh.event_info.change_reg.regnum] =
+                    eh.event_info.change_reg.old_val;
+                break;
+            }
+        }
+    end:
+
+        // find older pc
+        for (auto itr = exec_history.rbegin(), e = exec_history.rend();
+             itr != e; ++itr) {
+            if ((*itr).type == ExecHistoryType::CHANGE_PC) {
+                if (is_branch_delayed) {
+                    return (*itr).event_info.change_pc.old_pc + 2;
+                } else if ((*itr).event_info.change_pc.old_is_branch_delayed) {
+                    return (*itr).event_info.change_pc.old_pc - 2;
+                }
+                return (*itr).event_info.change_pc.old_pc;
+            }
+        }
+        throw std::runtime_error("Couldn't find last executed address");
     }
 } // namespace exasm

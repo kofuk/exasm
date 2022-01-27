@@ -30,6 +30,7 @@
     <div style="position:sticky; left:0; top:0; background:lightblue; border-bottom:2px solid black; padding:8px">
       <input type="button" value="Load mem and program" id="prog_init" />
       Memory: <input type="text" size="3" id="mem_start" value="0x34" />--<input type="text" size="3" id="mem_end" value="0x40" /><input type="button" value="Set range" id="set_range" />
+      <input type="button" value="Reverse next (←)" id="reverse_clock" />
       <input type="button" value="Next clock (→)" id="clock" />
       <div style="background-color: yellow" id="err"></div>
     </div>
@@ -224,16 +225,20 @@
      };
 
      const blinkCurrentLine = (addr) => {
-         const progLines = document.getElementById('trace_body').children;
-         for (let i = 0; i < progLines.length; i++) {
-             progLines[i].classList.remove('blinking', 'break');
-         }
+         clearBlinkLine();
          const el = document.getElementById('prog' + addr);
          el.classList.add('blinking')
          el.scrollIntoView({
              behavior: 'smooth',
              block: 'nearest',
          });
+     };
+
+     const clearBlinkLine = () => {
+         const progLines = document.getElementById('trace_body').children;
+         for (let i = 0; i < progLines.length; i++) {
+             progLines[i].classList.remove('blinking', 'break');
+         }
      };
 
      const createTraceTable = () => {
@@ -315,6 +320,22 @@
          updateEmulatorStatus();
      };
 
+     const reverseClock = () => {
+         if (emulator === 0) {
+             showError('Program not loaded');
+             return;
+         }
+         const addr = Module.ccall('reverse_next_clock', 'number', ['number'],
+                                   [emulator]);
+         if (addr < 0) {
+             clearBlinkLine();
+         } else {
+             blinkCurrentLine(addr);
+             document.getElementById('exec_addr').value = '0x' + addr.toString(16);
+         }
+         updateEmulatorStatus();
+     };
+
      addEventListener('load', () => {
          document.getElementById('prog_init')
                  .addEventListener('click', () => {
@@ -350,6 +371,11 @@
                      breaked = false;
                      e.target.value = 'Next clock (→)';
                      clock();
+                 });
+         document.getElementById('reverse_clock')
+                 .addEventListener('click', () => {
+                     breaked = false;
+                     reverseClock();
                  });
          document.getElementById('apply_reg')
                  .addEventListener('click', () => {
@@ -396,11 +422,14 @@
      });
 
      document.body.addEventListener('keydown', e => {
-         if (breaked) {
-             return;
-         }
          if (e.key === 'ArrowRight') {
+             if (breaked) {
+                 return;
+             }
+
              clock();
+         } else if (e.key === 'ArrowLeft') {
+             reverseClock();
          }
      });
     </script>

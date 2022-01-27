@@ -2,12 +2,13 @@
 #include "emulator.h"
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <sstream>
 
 namespace {
     bool breakpoint_hit = false;
     std::uint16_t break_addr;
-}
+} // namespace
 
 extern "C" {
 __attribute__((used)) exasm::Emulator *init_emulator(char *memfile,
@@ -25,6 +26,7 @@ __attribute__((used)) exasm::Emulator *init_emulator(char *memfile,
     }
 
     auto *emu = new exasm::Emulator;
+    emu->set_enable_exec_history(true);
 
     std::istringstream mem_strm(std::string(memfile, memfile + memfile_len));
     emu->load_memfile(mem_strm);
@@ -112,5 +114,13 @@ __attribute__((used)) int get_hit_breakpoint() {
         return static_cast<std::uint32_t>(break_addr);
     }
     return -1;
+}
+
+__attribute__((used)) int reverse_next_clock(exasm::Emulator *emu) {
+    try {
+        return static_cast<std::uint32_t>(emu->reverse_next_clock());
+    } catch (std::exception &) {
+        return -1;
+    }
 }
 }
