@@ -33,6 +33,7 @@
       <input type="button" value="Reverse next (←)" id="reverse_clock" />
       <input type="button" value="Next clock (→)" id="clock" />
       <input type="button" value="Copy assembled program" id="copy_prog_mem" />
+      <input type="button" value="Download memory as C source code" id="download_mem_c" />
       <div style="background-color: yellow" id="err"></div>
     </div>
 
@@ -381,6 +382,7 @@
          document.getElementById('copy_prog_mem')
                  .addEventListener('click', () => {
                      if (emulator === 0) {
+                         showError('Program not loaded');
                          return;
                      }
                      const prog = Module.ccall('dump_program', 'string', ['number'],
@@ -391,6 +393,24 @@
                      tmp.select();
                      document.execCommand('copy');
                      document.body.removeChild(tmp);
+                 });
+         document.getElementById('download_mem_c')
+                 .addEventListener('click', () => {
+                     if (emulator === 0) {
+                         showError('Program not loaded');
+                         return;
+                     }
+                     const mem = Module.ccall('serialize_mem', 'string', ['number'],
+                                               [emulator]);
+                     const blob = new Blob([mem], {type: "text/plain"});
+                     const url = URL.createObjectURL(blob);
+                     const link = document.createElement("a");
+                     document.body.appendChild(link);
+                     link.download = 'mem.inc';
+                     link.href = url;
+                     link.click();
+                     document.body.removeChild(link);
+                     URL.revokeObjectURL(url);
                  });
          document.getElementById('apply_reg')
                  .addEventListener('click', () => {

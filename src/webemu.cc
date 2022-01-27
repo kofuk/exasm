@@ -1,5 +1,6 @@
 #include "asmio.h"
 #include "emulator.h"
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <exception>
@@ -11,30 +12,6 @@ namespace {
 } // namespace
 
 extern "C" {
-__attribute__((used)) exasm::Emulator *init_emulator(char *memfile,
-                                                     std::size_t memfile_len,
-                                                     char *prog,
-                                                     std::size_t prog_len) {
-    std::istringstream prog_strm(std::string(prog, prog + prog_len));
-    exasm::AsmReader reader(prog_strm);
-    std::vector<exasm::Inst> insts;
-    try {
-        insts = reader.read_all();
-    } catch (exasm::ParseError &e) {
-        std::cerr << e.what() << '\n';
-        return nullptr;
-    }
-
-    auto *emu = new exasm::Emulator;
-    emu->set_enable_exec_history(true);
-
-    std::istringstream mem_strm(std::string(memfile, memfile + memfile_len));
-    emu->load_memfile(mem_strm);
-    emu->set_program(insts);
-
-    return emu;
-}
-
 __attribute__((used)) std::uint16_t get_register_value(exasm::Emulator *emu,
                                                        int number) {
     if (number < 0 || 7 < number) {
@@ -122,5 +99,46 @@ __attribute__((used)) int reverse_next_clock(exasm::Emulator *emu) {
     } catch (std::exception &) {
         return -1;
     }
+}
+
+__attribute__((used)) exasm::Emulator *init_emulator(char *memfile,
+                                                     std::size_t memfile_len,
+                                                     char *prog,
+                                                     std::size_t prog_len) {
+    std::istringstream prog_strm(std::string(prog, prog + prog_len));
+    exasm::AsmReader reader(prog_strm);
+    std::vector<exasm::Inst> insts;
+    try {
+        insts = reader.read_all();
+    } catch (exasm::ParseError &e) {
+        std::cerr << e.what() << '\n';
+        return nullptr;
+    }
+
+    auto *emu = new exasm::Emulator;
+    emu->set_enable_exec_history(true);
+
+    std::istringstream mem_strm(std::string(memfile, memfile + memfile_len));
+    emu->load_memfile(mem_strm);
+    emu->set_program(insts);
+
+    std::istringstream prog_mem_strm(dump_program(emu));
+    emu->load_memfile(prog_mem_strm);
+
+    return emu;
+}
+
+__attribute__((used)) char *serialize_mem(exasm::Emulator *emu) {
+    std::ostringstream strm;
+    strm << "{int i;static unsigned char t[]={";
+    for (std::uint8_t val : emu->get_memory()) {
+        strm << +val << ',';
+    }
+    strm << "};for(i=0;i<0x10000;++i)mem[i]=t[i];}\n";
+
+    char *result = new char[strm.str().size() + 1];
+    std::copy(strm.str().begin(), strm.str().end(), result);
+    result[strm.str().size()] = '\0';
+    return result;
 }
 }
