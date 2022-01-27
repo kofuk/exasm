@@ -1,4 +1,4 @@
-lli r0, 0x30
+lui r0, 0x1
 
 addi r1, 0x7b # Check addi (positive)
 sw r1, (r0)

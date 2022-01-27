@@ -1,4 +1,4 @@
-lli r0, 0x30
+lui r0, 0x1
 lli r2, 2
 
 beqz r1, 4 # Check beqz (positive)

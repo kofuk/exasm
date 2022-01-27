@@ -1,6 +1,6 @@
-lli r0, 0x30
+lui r0, 0x1
 
-lli r1, 2
+lli r1, 0x90
 lui r2, 0xde
 ori r2, 0xad
 sw r2, (r1)

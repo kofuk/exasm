@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
             break;
         }
         unsigned int ev = std::stoi(e, nullptr, 0);
-        unsigned int av = emu.get_memory()[0x30 + i];
+        unsigned int av = emu.get_memory()[0x100 + i];
         if (ev != av) {
             std::cerr << "Assertion failed:\n";
             std::cerr << "    expects:\n";
