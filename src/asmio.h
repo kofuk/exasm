@@ -90,7 +90,9 @@ namespace exasm {
         InstType read_inst_type();
         void next_line();
         void skip_space();
-        void skip_space_and_newline();
+        void must_read_newline(const std::string &context);
+        bool skip_newline();
+        bool goto_next_instruction();
         std::uint8_t read_reg(std::string king);
         void must_read(char c, std::string context);
         std::uint8_t read_immediate(bool allow_sign);

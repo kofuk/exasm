@@ -63,6 +63,9 @@ if meson.can_run_host_binaries()
   test('ASM mem', asm_runner,
        args : files('../tests/asm/mem_simple.in',
                     '../tests/asm/mem_simple.out'))
+  test('ASM robustness', asm_runner,
+       args : files('../tests/asm/syntax-rubustness.in',
+                    '../tests/asm/syntax-rubustness.out'))
 
   if get_option('ex_inst_t').enabled()
     test('ASM extension T', asm_runner,

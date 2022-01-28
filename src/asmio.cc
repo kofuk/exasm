@@ -217,45 +217,93 @@ namespace exasm {
     }
 
     void AsmReader::skip_space() {
+        bool comment = false;
         for (;;) {
             char c;
             strm.get(c);
             if (strm.fail()) {
                 return;
             }
-            if (!(c == ' ' || c == '\t')) {
-                strm.unget();
-                return;
+            if (c == '#') {
+                comment = true;
+            }
+            if (comment) {
+                if (c == '\r' || c == '\n') {
+                    strm.unget();
+                    return;
+                }
+            } else {
+                if (!(c == ' ' || c == '\t')) {
+                    strm.unget();
+                    return;
+                }
             }
         }
     }
 
-    void AsmReader::skip_space_and_newline() {
-        for (;;) {
-            char c;
+    void AsmReader::must_read_newline(const std::string &context) {
+        char c;
+        strm.get(c);
+        if (strm.fail()) {
+            return;
+        }
+        if (c == '\r') {
             strm.get(c);
             if (strm.fail()) {
                 return;
             }
-            if (c == '\n') {
+            if (c != '\n') {
                 ++linum;
-            }
-            if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) {
                 strm.unget();
                 return;
             }
+        } else if (c != '\n') {
+            strm.unget();
+            throw ParseError(format_error("New line expected " + context));
         }
+        ++linum;
     }
 
-    bool AsmReader::finished() {
+    bool AsmReader::skip_newline() {
         char c;
         strm.get(c);
         if (strm.fail()) {
             return true;
         }
-        strm.unget();
-        return false;
+        if (c == '\r') {
+            strm.get(c);
+            if (strm.fail()) {
+                return true;
+            }
+            if (c != '\n') {
+                ++linum;
+                strm.unget();
+                return true;
+            }
+        } else if (c != '\n') {
+            strm.unget();
+            return false;
+        }
+        ++linum;
+        return true;
     }
+
+    bool AsmReader::goto_next_instruction() {
+        for (;;) {
+            skip_space();
+            char c;
+            strm.get(c);
+            if (strm.fail()) {
+                return false;
+            }
+            strm.unget();
+            if (!skip_newline()) {
+                return true;
+            }
+        }
+    }
+
+    bool AsmReader::finished() { return !goto_next_instruction(); }
 
     std::uint8_t AsmReader::read_reg(std::string kind) {
         char c;
@@ -497,11 +545,16 @@ namespace exasm {
     }
 
     Inst AsmReader::read_next() {
-        skip_space_and_newline();
+        if (!goto_next_instruction()) {
+            throw ParseError(
+                "AsmReader::read_next called after last instruction finished.");
+        }
+
         InstType ty = read_inst_type();
         switch (ty) {
         case InstType::NOP:
-            next_line();
+            skip_space();
+            must_read_newline("after nop instruction");
             return Inst();
 #ifdef EXTEND_T
         case InstType::SR4:
@@ -523,7 +576,8 @@ namespace exasm {
             must_read(',', "after destination register");
             skip_space();
             std::uint8_t rs = read_reg("source");
-            next_line();
+            skip_space();
+            must_read_newline("after source register");
             return Inst(ty, rd, rs, true);
         }
         case InstType::SW:
@@ -540,7 +594,8 @@ namespace exasm {
             std::uint8_t rs = read_reg("source");
             skip_space();
             must_read(')', "before address register");
-            next_line();
+            skip_space();
+            must_read_newline("after address register");
             return Inst(ty, rd, rs, false);
         }
         case InstType::ADDI:
@@ -561,13 +616,15 @@ namespace exasm {
                                 ty == InstType::BNEZ || ty == InstType::BMI ||
                                 ty == InstType::BPL;
             std::uint8_t imm = read_immediate(sign_allowed);
-            next_line();
+            skip_space();
+            must_read_newline("after immediate");
             return Inst(ty, rd, imm);
         }
         case InstType::J: {
             skip_space();
             std::uint8_t imm = read_immediate(true);
-            next_line();
+            skip_space();
+            must_read_newline("after immediate");
             return Inst(ty, imm);
         }
         }
