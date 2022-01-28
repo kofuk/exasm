@@ -13,18 +13,6 @@ if host_machine.system() == 'emscripten'
   ]
 
   custom_target(
-    output : ['webas.html'],
-    input : ['wasm_shell_webas.html', 'webas.cc'],
-    command : [
-      empp, empp_gen_html_flags,
-      '-o', '@OUTPUT@', '--shell-file', '@INPUT@',
-      asmio_lib,
-    ],
-    install : true,
-    install_dir : '/opt/exasm',
-  )
-
-  custom_target(
     output : ['webemu.html'],
     input : ['wasm_shell_webemu.html', 'webemu.cc'],
     command : [
@@ -38,8 +26,16 @@ if host_machine.system() == 'emscripten'
 
   install_data('bcralnit.js', install_dir : '/opt/exasm')
 else
-  executable('as', 'exasm.cc', link_with : asmio_lib)
-  executable('emu', 'exemu.cc', link_with : [emulator_lib, asmio_lib])
+  executable(
+    'as', 'exasm.cc',
+    link_with : asmio_lib,
+    install : true,
+  )
+  executable(
+    'emu', 'exemu.cc',
+    link_with : [emulator_lib, asmio_lib],
+    install: true,
+  )
 endif
 
 if meson.can_run_host_binaries()
