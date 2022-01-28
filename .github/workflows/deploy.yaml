@@ -1,0 +1,50 @@
+name: deploy
+on: [push]
+
+env:
+  EMSDK_VERSION: 3.1.1
+  MESON_VERSION: 0.61.1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install required packages
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential g++
+      - uses: actions/cache@v2
+        with:
+          path: emsdk-cache
+          key: ${{env.EMSDK_VERSION}}-${{runner.os}}
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: ${{env.EMSDK_VERSION}}
+          actions-cache-folder: emsdk-cache
+      - uses: actions/setup-python@v1
+      - name: Run test
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: test
+          directory: _build/test
+          meson-version: ${{env.MESON_VERSION}}
+      - name: Build
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          directory: _build/build-default
+          setup-options: --cross-file etc/wasm.txt
+          meson-version: ${{env.MESON_VERSION}}
+      - name: Prepare deployment
+        run: |
+          mkdir public
+          cp _build/build-default/src/webemu.* public
+          mv public/webemu.html public/index.html
+          cp src/bcralnit.js public
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        # if: ${{ github.ref == 'refs/heads/master' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
