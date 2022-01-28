@@ -36,6 +36,13 @@ jobs:
           directory: _build/build-default
           setup-options: --cross-file etc/wasm.txt -Dhtml_install_dir=public
           meson-version: ${{env.MESON_VERSION}}
+      - name: 'Build (extension=t)'
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: install
+          directory: _build/build-ex-t
+          setup-options: --cross-file etc/wasm.txt -Dhtml_install_dir=public/t -Dex_inst_t=enabled
+          meson-version: ${{env.MESON_VERSION}}
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/master' }}
