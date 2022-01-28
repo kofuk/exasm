@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebEmu - Browser-based Processor Emulator &amp; Debugger</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs/editor/editor.main.min.css"
+        integrity="sha512-3kaW6VOMaj21NqrAUic4boSfhoP6drJ9bS4csFwvS11HlpL4DyS1QPm0GsAHK2yQGeBFRFi+LVK9uadFIA22Lg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer" />
+    <link
+        href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        rel="stylesheet">
+  </head>
+  <body>
+    <div class="controll-bar">
+      <button type="button" id="prog_init" title="Load program and initialize emulator">
+        <span class="material-icons">play_arrow</span><br/>
+        Load
+      </button>
+      <button type="button" id="reverse_clock" title="Undo clock cycle (←)">
+        <span class="material-icons">undo</span><br/>
+        Reverse Next
+      </button>
+      <button type="button" title="Next Clock (→)" id="clock">
+        <span class="material-icons">skip_next</span><br/>
+        Next Clock
+      </button>
+      <button type="button" value="Continue" id="continue">
+        <span class="material-icons">rotate_right</span><br/>
+        Continue
+      </button>
+      <button type="button" id="download_mem_c" title="Download whole program memory as C source code">
+        <span class="material-icons">file_download</span><br/>
+        Download Memory
+      </button>
+      <button type="button" id="copy_prog_mem" title="Copy mem file of the loaded program to clipboard">
+        <span class="material-icons">content_copy</span><br/>
+        Copy Executable
+      </button>
+      <div class="error-bar" id="err"></div>
+    </div>
+
+    <div class="doc-notification">
+      <span id="close_notification" class="close">✕</span>
+      Documentation available. (Japanese)
+      <a href="https://www.kofuk.org/blog/20220131-emulator/">Visit</a>
+    </div>
+
+    <div class="container">
+      <div class="source-pane pane">
+        <form class="editor-tab-selector">
+          <input type="radio" id="editor_prog" name="editor-tab" checked /><label for="editor_prog">Program</label><input type="radio" id="editor_mem" name="editor-tab" /><label for="editor_mem">Memory</label>
+        </form>
+        <div class="prog-editor" id="prog_editor"></div>
+        <a href="instructions.html">Instruction Set Manual</a>
+      </div>
+      <div class="run-pane pane">
+        <div>
+          Estimated Clock Count: <span id="clock_count">0</span>
+          <div class="tip">
+            <strong>DISCLAIMER</strong>: The estimated clock may be inaccurate
+            because the emulator doesn't run pipelined processing internally.
+          </div>
+        </div>
+
+        <div>
+          Register
+          <table>
+            <thead>
+              <tr>
+                <th>r0</th>
+                <th>r1</th>
+                <th>r2</th>
+                <th>r3</th>
+                <th>r4</th>
+                <th>r5</th>
+                <th>r6</th>
+                <th>r7</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" size="3" id="reg0" /></td>
+                <td><input type="text" size="3" id="reg1" /></td>
+                <td><input type="text" size="3" id="reg2" /></td>
+                <td><input type="text" size="3" id="reg3" /></td>
+                <td><input type="text" size="3" id="reg4" /></td>
+                <td><input type="text" size="3" id="reg5" /></td>
+                <td><input type="text" size="3" id="reg6" /></td>
+                <td><input type="text" size="3" id="reg7" /></td>
+              </tr>
+            </tbody>
+          </table>
+          <input type="button" value="Apply Changes" id="apply_reg" />
+        </div>
+
+        <div>
+          Memory <input type="text" size="3" id="mem_start" value="0x34" class="outlined" /><input type="text" size="3" id="mem_end" value="0x40" class="outlined" /><input type="button" value="Set Range" id="set_range" />
+
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>x0<br>x8</th>
+                <th>x1<br>x9</th>
+                <th>x2<br>xa</th>
+                <th>x3<br>xb</th>
+                <th>x4<br>xc</th>
+                <th>x5<br>xd</th>
+                <th>x6<br>xe</th>
+                <th>x7<br>xf</th>
+              </tr>
+            </thead>
+            <tbody id="mem_table_body">
+            </tbody>
+          </table>
+          <input type="button" value="Apply Changes" id="apply_mem" />
+        </div>
+
+        <div>
+          Trace
+          <div class="tip">
+            Trace table simply shows decoded data near the program counter,
+            which means contents that were not written by you may be shown up!
+          </div>
+          <div class="trace-table-container">
+            <table style="display: block">
+              <thead>
+                <tr>
+                  <th>Instruction</th>
+                </tr>
+              </thead>
+              <tbody id="trace_body"></tbody>
+            </table>
+            <div class="trace-table-scroll-container">
+              <button><span class="material-icons inline-icon" id="trace_scroll_up">expand_less</span></button>
+              <button><span class="material-icons inline-icon" id="trace_scroll_down">expand_more</span></button>
+            </div>
+          </div>
+          <button type="button" id="collapse_trace_table"><span class="material-icons inline-icon">expand_less</span></button><button type="button" id="expand_trace_table"><span class="material-icons inline-icon">expand_more</span>Expand Trace Table</button>
+        </div>
+      </div>
+      <div class="breakpoint-pane pane">
+        Breakpoints
+        <table class="breakpoint-table">
+            <thead>
+              <tr>
+                <th>Condition</th>
+              </tr>
+            </thead>
+            <tbody id="breakpoint_table_body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <a href="https://github.com/kofuk/exasm">View Source Code on GitHub</a>
+    </div>
+
+      <script>
+       var Module = {
+           preRun: [],
+           postRun: [],
+           print: function(text) {
+               console.log(text);
+           },
+           printErr: function(text) {
+               appendError(text);
+           },
+           setStatus: function(text) {
+               if (text) console.log(text);
+           },
+       };
+
+       var require = {
+           paths: {
+               vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs'
+           },
+           'vs/nls': {
+               availableLanguages: {
+                   '*': 'ja'
+               }
+           }
+       };
+      </script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs/loader.min.js"
+        integrity="sha512-Ffp6rxgxoBVdIqZjh+sswQIpL3Beu1BhlmisLpAZuO/8ENWpZjmjktp7w4WsaB2fgj2Tq/Sf5plViG2qJpivog=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs/editor/editor.main.min.js"
+        integrity="sha512-WonfuZ3g7wNOB0wnPwdCJkcg4LQB1XwVpbZRBxn++nCdhsTtjGDvzekEUrt76A0Ef6DD0KVc7FfWmqn0dS7vTA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script src="driver.js"></script>
+    <script async type="text/javascript" src="index.js"></script>
+  </body>
+</html>
+
+

@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Instruction Set Manual - WebEmu</title>
+  <meta name="viewport" content="width=device-width" />
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+
+    td, th {
+      border: 1px solid black;
+      padding: 5px 3px;
+    }
+
+    code {
+      padding-inline: 5px;
+      background-color: #ddd;
+      border-radius: 3px;
+    }
+    .arg {
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Instruction Set Manual</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Opcode</th><th>Mnemonic</th><th>Meaning</th><th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>add</code></td>
+        <td><code>00000ddd sss00100</code></td>
+        <td><code>add <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Add</td>
+        <td>Adds register <code>rs</code> and <code>rd</code>, then store the result to <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>addi</code></td>
+        <td><code>00100ddd xxxxxxxx</code></td>
+        <td><code>addi <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Add Immediate</td>
+        <td>Adds register <code>rs</code> and the given immediate <code>imm</code>, then store the result to <code>rd</code>. <code>imm</code> is sign-extended to 16-bit.</td>
+      </tr>
+      <tr>
+        <td><code>and</code></td>
+        <td><code>00000ddd sss01010</code></td>
+        <td><code>and <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>AND</td>
+        <td>Takes bitwise AND of register <code>rd</code> and <code>rs</code>, then store the result to <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>andi</code></td>
+        <td><code>01010ddd xxxxxxxx</code></td>
+        <td><code>andi <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>AND Immediate</td>
+        <td>Takes bitwise AND of register <code>rs</code> and the given immediate <code>imm</code>, then store the result to <code>rd</code>. <code>imm</code> is zero-extended to 16-bit.</td>
+      </tr>
+      <tr>
+        <td><code>beqz</code></td>
+        <td><code>10000ddd xxxxxxxx</code></td>
+        <td><code>beqz <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Branch on Equal Zero</td>
+        <td>If given register <code>rd</code> is zero, then jumps to immediate <code>imm</code> relative to the current program counter.</td>
+      </tr>
+      <tr>
+        <td><code>bmi</code></td>
+        <td><code>10010ddd xxxxxxxx</code></td>
+        <td><code>bmi <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Branch on Minus</td>
+        <td>If given register <code>rd</code> is less than zero, then jumps to immediate <code>imm</code> relative to the current program counter.</td>
+      </tr>
+      <tr>
+        <td><code>bnez</code></td>
+        <td><code>10001ddd xxxxxxxx</code></td>
+        <td><code>bnez <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Branch on Not Equal Zero</td>
+        <td>If given register <code>rd</code> is non-zero, then jumps to immediate <code>imm</code> relative to the current program counter.</td>
+      </tr>
+      <tr>
+        <td><code>bpl</code></td>
+        <td><code>10011ddd xxxxxxxx</code></td>
+        <td><code>bpl <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Branch on Plus</td>
+        <td>If given register <code>rd</code> is equal to or greater than zero, then jumps to immediate <code>imm</code> relative to the current program counter.</td>
+      </tr>
+      <tr>
+        <td><code>j</code></td>
+        <td><code>11000ddd xxxxxxxx</code></td>
+        <td><code>j <span class="arg">imm</span></code></td>
+        <td>Jump</td>
+        <td>Jumps to immediate <code>imm</code> relative to the current program counter unconditionally.</td>
+      </tr>
+      <tr>
+        <td><code>lbu</code></td>
+        <td><code>00000ddd sss10011</code></td>
+        <td><code>lbu <span class="arg">rd</span>, (<span class="arg">rs</span>)</code></td>
+        <td>Load Byte Unsigned</td>
+        <td>Loads from address value in register <code>rs</code> to the lower byte of register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>lli</code></td>
+        <td><code>00001ddd xxxxxxxx</code></td>
+        <td><code>lli <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Load lower Immediate</td>
+        <td>Stores given immediate <code>imm</code> to the lower byte of register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>lui</code></td>
+        <td><code>00110ddd xxxxxxxx</code></td>
+        <td><code>lui <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Load Upper Immediate</td>
+        <td>Stores given immediate <code>imm</code> to the higher byte of register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>lw</code></td>
+        <td><code>00000ddd sss10001</code></td>
+        <td><code>lw <span class="arg">rd</span>, (<span class="arg">rs</span>)</code></td>
+        <td>Load Word</td>
+        <td>Loads from address value in register <code>rs</code> to register <code>rd</code>. <code>rs</code> must be 16-bit aligned.</td>
+      </tr>
+      <tr>
+        <td><code>mov</code></td>
+        <td><code>00000ddd sss00001</code></td>
+        <td><code>mov <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Move</td>
+        <td>Copies value of register <code>rs</code> to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>nop</code></td>
+        <td><code>00000ddd sss00000</code></td>
+        <td><code>nop</code></td>
+        <td>No Operation</td>
+        <td>Does nothing.</td>
+      </tr>
+      <tr>
+        <td><code>not</code></td>
+        <td><code>00000ddd sss00010</code></td>
+        <td><code>not <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Not</td>
+        <td>Inverts the bits of register <code>rs</code>, then stores the result to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>or</code></td>
+        <td><code>00000ddd sss01011</code></td>
+        <td><code>or <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Inclusive OR</td>
+        <td>Takes bitwise OR of register <code>rd</code> and <code>rs</code>, then store the result to <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>ori</code></td>
+        <td><code>01011ddd xxxxxxxx</code></td>
+        <td><code>ori <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Inclusive OR Immediate</td>
+        <td>Takes bitwise OR of register <code>rs</code> and the given immediate <code>imm</code>, then store the result to <code>rd</code>. <code>imm</code> is zero-extended to 16-bit.</td>
+      </tr>
+      <tr>
+        <td><code>sbu</code></td>
+        <td><code>00000ddd sss10010</code></td>
+        <td><code>sbu <span class="arg">rd</span>, (<span class="arg">rs</span>)</code></td>
+        <td>Store Byte Unsigned</td>
+        <td>Stores the lower byte of register <code>rd</code> to the address value in register <code>rs</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sl</code></td>
+        <td><code>00000ddd sss01000</code></td>
+        <td><code>sl <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Shift Left</td>
+        <td>Shifts register <code>rs</code> to the left 1 bit, then store the result to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sl8</code></td>
+        <td><code>00000ddd sss00110</code></td>
+        <td><code>sl8 <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Shift Left 8 bits</td>
+        <td>Shifts register <code>rs</code> to the left 8 bits, then store the result to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sr</code></td>
+        <td><code>00000ddd sss01001</code></td>
+        <td><code>sr <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Shift Right</td>
+        <td>Logical-shifts register <code>rs</code> to the right 1 bit, then store the result to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sr4</code></td>
+        <td><code>00000ddd sss01100</code></td>
+        <td><code>sr4 <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Shift Left 4 bits</td>
+        <td>Logical-shifts register <code>rs</code> to the right 4 bit, then store the result to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sr8</code></td>
+        <td><code>00000ddd sss00111</code></td>
+        <td><code>sr8 <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Shift Right 8 bits</td>
+        <td>Logical-shifts register <code>rs</code> to the right 8 bit, then store the result to register <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sub</code></td>
+        <td><code>00000ddd sss00101</code></td>
+        <td><code>sub <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Subtract</td>
+        <td>Subtracts register <code>rs</code> from register <code>rd</code> (i.e. <code>rd</code> - <code>rs</code>), then store the result to <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>sw</code></td>
+        <td><code>00000ddd sss10000</code></td>
+        <td><code>sw <span class="arg">rd</span>, (<span class="arg">rs</span>)</code></td>
+        <td>Store Word</td>
+        <td>Stores register <code>rd</code> to the address value in register <code>rs</code>. <code>rs</code> must be 16-bit aligned.</td>
+      </tr>
+      <tr>
+        <td><code>xor</code></td>
+        <td><code>00000ddd sss00011</code></td>
+        <td><code>xor <span class="arg">rd</span>, <span class="arg">rs</span></code></td>
+        <td>Exclusive OR</td>
+        <td>Takes bitwise XOR of register <code>rd</code> and <code>rs</code>, then stores the result to <code>rd</code>.</td>
+      </tr>
+      <tr>
+        <td><code>xori</code></td>
+        <td><code>00011ddd xxxxxxxx</code></td>
+        <td><code>xori <span class="arg">rd</span>, <span class="arg">imm</span></code></td>
+        <td>Exclusive OR Immediate</td>
+        <td>Takes bitwise XOR of register <code>rd</code> and immediate <code>imm</code>, then stores the result to <code>rd</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
