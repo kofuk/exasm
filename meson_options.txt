@@ -1,4 +1,10 @@
 option(
+  'html_install_dir',
+  type : 'string',
+  value : '/opt/exasm',
+  description : 'Prefix for installing HTML artifacts'
+)
+option(
   'ex_inst_t',
   type : 'feature',
   value : 'disabled',

@@ -32,19 +32,13 @@ jobs:
       - name: Build
         uses: BSFishy/meson-build@v1.0.3
         with:
-          action: build
+          action: install
           directory: _build/build-default
-          setup-options: --cross-file etc/wasm.txt
+          setup-options: --cross-file etc/wasm.txt -Dhtml_install_dir=public
           meson-version: ${{env.MESON_VERSION}}
-      - name: Prepare deployment
-        run: |
-          mkdir public
-          cp _build/build-default/src/webemu.* public
-          mv public/webemu.html public/index.html
-          cp src/bcralnit.js public
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        # if: ${{ github.ref == 'refs/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public

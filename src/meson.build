@@ -2,6 +2,14 @@ asmio_lib = static_library('asmio', 'asmio.cc')
 emulator_lib = static_library('emulator', 'emulator.cc')
 
 if host_machine.system() == 'emscripten'
+  fs = import('fs')
+
+  if fs.is_absolute(get_option('html_install_dir'))
+    html_install_dir = get_option('html_install_dir')
+  else
+    html_install_dir = meson.project_source_root() / get_option('html_install_dir')
+  endif
+
   emcc = find_program('emcc')
 
   emcc_gen_html_flags = [
@@ -13,18 +21,18 @@ if host_machine.system() == 'emscripten'
   ]
 
   custom_target(
-    output : ['webemu.html'],
+    output : ['index.html', 'index.js', 'index.wasm'],
     input : ['wasm_shell_webemu.html', 'webemu.cc'],
     command : [
       emcc, emcc_gen_html_flags,
-      '-o', '@OUTPUT@', '--shell-file', '@INPUT@',
+      '-o', '@OUTPUT0@', '--shell-file', '@INPUT@',
       asmio_lib, emulator_lib,
     ],
     install : true,
-    install_dir : get_option('datadir') / 'exasm',
+    install_dir : html_install_dir,
   )
 
-  install_data('bcralnit.js', install_dir : get_option('datadir') / 'exasm')
+  install_data('bcralnit.js', install_dir : html_install_dir)
 else
   executable(
     'as', 'exasm.cc',
