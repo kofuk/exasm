@@ -40,8 +40,8 @@
     <div style="display:flex">
       <div style="flex:1">
         <form>
-          <textarea id="prog" rows="15" cols="20" placeholder="Program (assembly)"></textarea><br/>
-          <textarea id="memfile" rows="15" cols="20" placeholder="Contents of .mem file"></textarea><br/>
+          <textarea id="prog" rows="15" placeholder="Program (assembly)" style="width:90%"></textarea><br/>
+          <textarea id="memfile" rows="15" placeholder="Contents of .mem file" style="width:90%"></textarea><br/>
         </form>
         <div>
           <a href="https://github.com/kofuk/exasm">View source code on GitHub</a>
@@ -500,7 +500,7 @@
 	    crossorigin="anonymous"></script>
     <script src="bcralnit.js"></script>
     <script>
-     $('#prog').bcralnit();
+     $('#prog').bcralnit({width: '35px'});
     </script>
     {{{ SCRIPT }}}
   </body>
