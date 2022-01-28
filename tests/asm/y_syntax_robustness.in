@@ -5,7 +5,7 @@ lli r0, 1 #hoge
 
   #hogehoge
 
- mov r0, r2     	
+ mov r0,r2     	
 
 mov r0, r1
 
