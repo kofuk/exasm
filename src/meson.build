@@ -111,6 +111,10 @@ if meson.can_run_host_binaries()
        args : files('../tests/emu/y_mem.in',
                     '../tests/emu/y_mem.op',
                     '../tests/emu/y_mem.out'))
+  test('EMU break simple', emu_runner,
+       args : files('../tests/emu/y_break_simple.in',
+                    '../tests/emu/y_break_simple.op',
+                    '../tests/emu/y_break_simple.out'))
   if get_option('ex_inst_t').enabled()
     test('EMU extension T', emu_runner,
          args : files('../tests/emu/y_ex_t.in',

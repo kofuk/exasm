@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
         } catch (const exasm::ExecutionError &e) {
             std::cerr << e.what() << '\n';
             return 1;
-        }
+        } catch (const exasm::Breakpoint &) {}
     }
 finish:
 

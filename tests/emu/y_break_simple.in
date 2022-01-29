@@ -1,0 +1,3 @@
+lui r0, 1
+lli r1, 1
+sbu r1, (r0)
