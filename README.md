@@ -7,21 +7,18 @@ Assembler & emulator for pipelined processor I creating at experiment.
 ## Building
 
 This project uses Meson to configure build system.
-You need install meson regardless of the frontend you choose.
+You need install Meson and Ninja regardless of the frontend you choose.
 
-Ubuntu example:
-
-```shell
-$ sudo apt install python3 ninja-build
-$ pip3 install meson
-```
-
-(On Ubuntu, APT version of Meson may be too old).
+**Note**: On Ubuntu, APT package of Meson is too old and fails to configure
+this project. If you encountered the problem, try installing Meson with `pip`.
 
 ### Web interface (recommended)
 
+Web interface is implemented by calling C++ code (compiled to WebAssembly) from JavaScript.
+You need install Emscripten on your system.
+
 ```shell
-$ meson . _build -Dhtml_install_dir=/opt/exasm --cross-file cross/wasm.txt
+$ meson . _build -Dhtml_install_dir=/opt/exasm --cross-file cross/wasm.txt && cd _build
 $ ninja install
 ```
 
@@ -37,6 +34,8 @@ command line interface has limited functionality.
 
 If you'd like to use assembler in automated build, command line assembler
 may be a good choice. Otherwise, you should build web interface instead.
+
+You need C++ compiler installed on your system.
 
 ```shell
 $ meson . _build && cd _build
