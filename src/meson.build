@@ -66,6 +66,11 @@ if meson.can_run_host_binaries()
   test('ASM robustness', asm_runner,
        args : files('../tests/asm/y_syntax_robustness.in',
                     '../tests/asm/y_syntax_robustness.out'))
+  if get_option('ex_inst_t').enabled()
+    test('ASM extension T', asm_runner,
+         args : files('../tests/asm/y_ex_t.in',
+                      '../tests/asm/y_ex_t.out'))
+  endif
   test('ASM missing operand', asm_runner,
        should_fail : true,
        args : files('../tests/asm/n_missing_operand.in',
@@ -87,12 +92,6 @@ if meson.can_run_host_binaries()
        args : files('../tests/asm/n_invalid_imm.in',
                     '../tests/asm/n_invalid_imm.out'))
 
-  if get_option('ex_inst_t').enabled()
-    test('ASM extension T', asm_runner,
-         args : files('../tests/asm/y_ex_t.in',
-                      '../tests/asm/y_ex_t.out'))
-  endif
-
   emu_runner = executable('exemu_test_runner', 'exemu_test.cc', link_with : [asmio_lib, emulator_lib])
   test('EMU register arith', emu_runner,
        args : files('../tests/emu/y_reg_arith.in',
@@ -106,10 +105,17 @@ if meson.can_run_host_binaries()
   test('EMU mem', emu_runner,
        args : files('../tests/emu/y_mem.in',
                     '../tests/emu/y_mem.out'))
-
   if get_option('ex_inst_t').enabled()
     test('EMU extension T', emu_runner,
          args : files('../tests/emu/y_ex_t.in',
                       '../tests/emu/y_ex_t.out'))
   endif
+  test('EMU unaligned word access 1', emu_runner,
+       should_fail : true,
+       args : files('../tests/emu/n_unaligned_word_access.in',
+                    '../tests/emu/n_unaligned_word_access.out'))
+  test('EMU unaligned word access 2', emu_runner,
+       should_fail : true,
+       args : files('../tests/emu/n_unaligned_word_access_2.in',
+                    '../tests/emu/n_unaligned_word_access_2.out'))
 endif
