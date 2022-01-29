@@ -161,4 +161,8 @@ __attribute__((used)) char *serialize_mem(EmulatorWrapper *ew) {
     result[strm.str().size()] = '\0';
     return result;
 }
+
+__attribute__((used)) int get_estimated_clock(EmulatorWrapper *ew) {
+    return ew->emu->get_estimated_clock_count();
+}
 }

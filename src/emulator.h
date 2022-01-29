@@ -94,6 +94,8 @@ namespace exasm {
         bool enable_exec_history = false;
         std::list<ExecHistory> exec_history;
 
+        int clock_count = 0;
+
         void set_pc(std::uint16_t pc) { this->pc = pc; }
 
         void record_exec_history(ExecHistory &&hist) {
@@ -156,6 +158,8 @@ namespace exasm {
         std::uint16_t clock();
 
         std::uint16_t reverse_next_clock();
+
+        int get_estimated_clock_count() const;
     };
 } // namespace exasm
 

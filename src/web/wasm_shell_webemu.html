@@ -31,7 +31,11 @@
         <div id="status" style="background:lightgreen"></div>
 
         <div>
-          Executed address: <input type="text" id="exec_addr" />
+          Estimated clock count: <span id="clock_count">0</span>
+          <div style="color:gray; font-size:12px; padding-left:10px">
+            Tip: Estimated clock may NOT be reliable because the emulator
+            doesn't emulate pipelined processor internally.
+          </div>
         </div>
 
         <div>

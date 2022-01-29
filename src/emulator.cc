@@ -241,6 +241,8 @@ namespace exasm {
             throw ExecutionError("Unsupported instruction");
         }
 
+        ++clock_count;
+
         return exec_addr;
     }
 
@@ -285,6 +287,8 @@ namespace exasm {
         }
     end:
 
+        --clock_count;
+
         // find older pc
         for (auto itr = exec_history.rbegin(), e = exec_history.rend();
              itr != e; ++itr) {
@@ -298,5 +302,9 @@ namespace exasm {
             }
         }
         throw std::runtime_error("Couldn't find last executed address");
+    }
+
+    int Emulator::get_estimated_clock_count() const {
+        return clock_count + 3;
     }
 } // namespace exasm

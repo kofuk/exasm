@@ -36,6 +36,9 @@ const updateEmulatorStatus = () => {
         }
         el.value = '0x' + Module.HEAPU8[memOffset + i].toString(16);
     }
+
+    const clockCount = Module.ccall('get_estimated_clock', 'number', ['number'], [emulator]);
+    document.getElementById('clock_count').innerText = clockCount;
 };
 
 let memStart = 0;
@@ -187,7 +190,6 @@ const clock = () => {
         document.getElementById('clock').value = 'Next clock';
     } else {
         blinkCurrentLine(addr);
-        document.getElementById('exec_addr').value = '0x' + addr.toString(16);
     }
 
     updateEmulatorStatus();
@@ -207,7 +209,6 @@ const reverseClock = () => {
         clearBlinkLine();
     } else {
         blinkCurrentLine(addr);
-        document.getElementById('exec_addr').value = '0x' + addr.toString(16);
     }
     updateEmulatorStatus();
 };
