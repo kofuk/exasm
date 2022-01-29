@@ -116,8 +116,6 @@ namespace exasm {
                 pc, delayed_addr_save, is_branch_delayed_save));
         }
 
-        pc += 2;
-
         auto bp = std::find(breakpoints.begin(), breakpoints.end(), exec_addr);
         if (!breaked && bp != breakpoints.end()) {
             breaked = true;
@@ -127,6 +125,8 @@ namespace exasm {
             throw Breakpoint(exec_addr);
         }
         breaked = false;
+
+        pc += 2;
 
         switch (inst.inst) {
         case InstType::NOP:
