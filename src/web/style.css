@@ -1,0 +1,19 @@
+@keyframes blink {
+    from {
+        background-color: yellow;
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+.blinking {
+    animation-name: blink;
+    animation-duration: 600ms;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+.break {
+    background-color: red !important;
+}

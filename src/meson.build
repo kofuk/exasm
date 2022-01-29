@@ -22,7 +22,7 @@ if host_machine.system() == 'emscripten'
 
   custom_target(
     output : ['index.html', 'index.js', 'index.wasm'],
-    input : ['wasm_shell_webemu.html', 'webemu.cc'],
+    input : ['web/wasm_shell_webemu.html', 'webemu.cc'],
     command : [
       emcc, emcc_gen_html_flags,
       '-o', '@OUTPUT0@', '--shell-file', '@INPUT@',
@@ -32,7 +32,9 @@ if host_machine.system() == 'emscripten'
     install_dir : html_install_dir,
   )
 
-  install_data('bcralnit.js', install_dir : html_install_dir)
+  install_data('web/bcralnit.js', install_dir : html_install_dir)
+  install_data('web/driver.js', install_dir : html_install_dir)
+  install_data('web/style.css', install_dir : html_install_dir)
 else
   executable(
     'as', 'exasm.cc',
