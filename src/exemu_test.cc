@@ -3,13 +3,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstring>
 
 #include "asmio.h"
 #include "emulator.h"
 
 int main(int argc, char **argv) {
-    if (argc < 3) {
-        std::cerr << "usage: exemu_test SOURCE EXPECTS\n";
+    if (argc < 4) {
+        std::cerr << "usage: exemu_test SOURCE OPERATION EXPECTS\n";
         return 1;
     }
 
@@ -24,25 +25,58 @@ int main(int argc, char **argv) {
     exasm::Emulator emu;
     emu.set_program(std::move(prog));
 
-    bool finished = false;
-    for (int i = 0; i < 1000000; ++i) {
-        try {
-            emu.clock();
-        } catch (const exasm::ExecutionError &e) {
-            if (std::string(e.what()) == "Program finished") {
-                finished = true;
+    std::ifstream op(argv[2]);
+    if (!op) {
+        std::cerr << "Can't open operation file.\n";
+        return 1;
+    }
+
+    for (;;) {
+        std::string current_op;
+        for (;;) {
+            std::getline(op, current_op);
+            if (!op) {
+                goto finish;
+            }
+            if (current_op.size() != 0) {
                 break;
             }
+        }
+
+        try {
+            if (current_op == "n") {
+                emu.clock();
+            } else if (current_op == "rn") {
+                emu.reverse_next_clock();
+            } else if (current_op.substr(0, 2) == "b ") {
+                if (current_op.size() < 3) {
+                    std::cerr << "Address expected for break operation.\n";
+                    return 1;
+                }
+                int addr = std::stoi(current_op.substr(2), nullptr, 0);
+                emu.set_breakpoint(addr);
+            } else if (current_op == "finish") {
+                try {
+                    clock();
+                } catch(const exasm::ExecutionError &e) {
+                    if (std::strcmp(e.what(), "Program finished") == 0) {
+                        break;
+                    }
+                    std::cerr << e.what() << '\n';
+                    return 1;
+                }
+            } else {
+                std::cerr << "Invalid operation: " << current_op << '\n';
+                return 1;
+            }
+        } catch (const exasm::ExecutionError &e) {
             std::cerr << e.what() << '\n';
             return 1;
         }
     }
-    if (!finished) {
-        std::cerr << "Program not finished\n";
-        return 1;
-    }
+finish:
 
-    std::ifstream expects(argv[2]);
+    std::ifstream expects(argv[3]);
     if (!expects) {
         std::cerr << "Can't open expects file.\n";
         return 1;

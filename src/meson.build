@@ -97,27 +97,34 @@ if meson.can_run_host_binaries()
   emu_runner = executable('exemu_test_runner', 'exemu_test.cc', link_with : [asmio_lib, emulator_lib])
   test('EMU register arith', emu_runner,
        args : files('../tests/emu/y_reg_arith.in',
+                    '../tests/emu/y_reg_arith.op',
                     '../tests/emu/y_reg_arith.out'))
   test('EMU immediate arith', emu_runner,
        args : files('../tests/emu/y_imm_arith.in',
+                    '../tests/emu/y_imm_arith.op',
                     '../tests/emu/y_imm_arith.out'))
   test('EMU branch', emu_runner,
        args : files('../tests/emu/y_branch.in',
+                    '../tests/emu/y_branch.op',
                     '../tests/emu/y_branch.out'))
   test('EMU mem', emu_runner,
        args : files('../tests/emu/y_mem.in',
+                    '../tests/emu/y_mem.op',
                     '../tests/emu/y_mem.out'))
   if get_option('ex_inst_t').enabled()
     test('EMU extension T', emu_runner,
          args : files('../tests/emu/y_ex_t.in',
+                      '../tests/emu/y_ex_t.op',
                       '../tests/emu/y_ex_t.out'))
   endif
   test('EMU unaligned word access 1', emu_runner,
        should_fail : true,
        args : files('../tests/emu/n_unaligned_word_access.in',
+                    '../tests/emu/n_unaligned_word_access.op',
                     '../tests/emu/n_unaligned_word_access.out'))
   test('EMU unaligned word access 2', emu_runner,
        should_fail : true,
        args : files('../tests/emu/n_unaligned_word_access_2.in',
+                    '../tests/emu/n_unaligned_word_access_2.op',
                     '../tests/emu/n_unaligned_word_access_2.out'))
 endif
