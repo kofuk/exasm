@@ -14,27 +14,37 @@ namespace exasm {
         std::uint8_t rd;
         std::uint8_t rs;
         std::uint8_t imm;
-        bool reg_arith = false;
-        bool mem_inst = false;
-        bool imm_inst = false;
-        bool jump_inst = false;
 
-        Inst(InstType inst) : inst(inst) {}
-
-        Inst(InstType inst, std::uint8_t rd, std::uint8_t rs, bool reg_arith)
-            : inst(std::move(inst)), rd(rd), rs(rs) {
-            if (reg_arith) {
-                this->reg_arith = true;
-            } else {
-                this->mem_inst = true;
-            }
+        static Inst new_with_type(InstType inst) {
+            Inst result;
+            result.inst = inst;
+            return result;
         }
 
-        Inst(InstType inst, std::uint8_t rd, std::uint8_t imm)
-            : inst(inst), rd(rd), imm(imm), imm_inst(true) {}
+        static Inst new_with_reg_reg(InstType inst, std::uint8_t rd,
+                                     std::uint8_t rs) {
+            Inst result;
+            result.inst = inst;
+            result.rd = rd;
+            result.rs = rs;
+            return result;
+        }
 
-        Inst(InstType inst, std::uint8_t imm)
-            : inst(inst), imm(imm), jump_inst(true) {}
+        static Inst new_with_reg_imm(InstType inst, std::uint8_t rd,
+                                     std::uint8_t imm) {
+            Inst result;
+            result.inst = inst;
+            result.rd = rd;
+            result.imm = imm;
+            return result;
+        }
+
+        static Inst new_with_imm(InstType inst, std::uint8_t imm) {
+            Inst result;
+            result.inst = inst;
+            result.imm = imm;
+            return result;
+        }
 
         void print_asm(std::ostream &out) const;
 

@@ -37,15 +37,15 @@ if __name__ == '__main__':
                 inst['args'][-1] if len(inst['args']) > 0 else 'instruction'))
 
             if inst['args'] == []:
-                out.write('    return Inst(ty);\n')
+                out.write('    return Inst::new_with_type(ty);\n')
             elif inst['args'] == ['rd', 'rs']:
-                out.write(f'    return Inst(ty, rd, rs, true);\n')
+                out.write(f'    return Inst::new_with_reg_reg(ty, rd, rs);\n')
             elif inst['args'] == ['rd', 'addr']:
-                out.write('    return Inst(ty, rd, rs, false);\n')
+                out.write('    return Inst::new_with_reg_reg(ty, rd, rs);\n')
             elif inst['args'] == ['rd', 'imm']:
-                out.write('    return Inst(ty, rd, imm);\n')
+                out.write('    return Inst::new_with_reg_imm(ty, rd, imm);\n')
             elif inst['args'] == ['imm']:
-                out.write('    return Inst(ty, imm);\n')
+                out.write('    return Inst::new_with_imm(ty, imm);\n')
             else:
                 print('Unsupported arg operand: ', inst['args'])
                 sys.exit(1)
