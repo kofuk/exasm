@@ -2,6 +2,7 @@
 c = 'emcc'
 cpp = 'emcc'
 ar = 'emar'
+strip = 'true'
 
 [properties]
 shared_lib_suffix = 'js'
