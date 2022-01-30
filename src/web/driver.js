@@ -170,7 +170,27 @@ const getStringFromHeap = (offset) => {
     return decoder.decode(data);
 };
 
-let breaked = false;
+const states = new Proxy(
+    {
+        continueInterrupted: true,
+        breaked: false,
+    },
+    {
+        set: (obj, prop, value) => {
+            if (prop in obj) {
+                if (prop === 'continueInterrupted') {
+                    document.getElementById('continue').value = value ? 'Continue' : 'Interrupt';
+                } else if (prop === 'breaked') {
+                    document.getElementById('clock').value = value ? 'Next clock' : 'Next clock (→)';
+                }
+
+                obj[prop] = value;
+                return true;
+            }
+            return false;
+        },
+    }
+);
 
 const clock = () => {
     if (emulator === 0) {
@@ -186,8 +206,7 @@ const clock = () => {
         blinkCurrentLine(breakAddr);
         document.getElementById('break' + breakAddr).parentNode.parentNode
             .classList.add('break');
-        breaked = true;
-        document.getElementById('clock').value = 'Next clock';
+        states.breaked = true;
     } else {
         blinkCurrentLine(addr);
     }
@@ -213,9 +232,27 @@ const reverseClock = () => {
     updateEmulatorStatus();
 };
 
+const doContinue = () => {
+    if (emulator === 0) {
+        showError('Program not loaded');
+        return;
+    }
+
+    for (let i = 0; i < 10; i++) {
+        clock();
+        if (states.breaked || states.continueInterrupted) {
+            return;
+        }
+    }
+    setTimeout(doContinue);
+};
+
 addEventListener('load', () => {
     document.getElementById('prog_init')
         .addEventListener('click', () => {
+            states.continueInterrupted = true;
+            states.breaked = false;
+
             if (emulator !== 0) {
                 Module.ccall('destroy_emulator', 'number', ['number'], [emulator])
                 emulator = 0;
@@ -245,14 +282,25 @@ addEventListener('load', () => {
         });
     document.getElementById('clock')
         .addEventListener('click', e => {
-            breaked = false;
-            e.target.value = 'Next clock (→)';
+            states.continueInterrupted = true;
+            states.breaked = false;
             clock();
         });
     document.getElementById('reverse_clock')
         .addEventListener('click', () => {
-            breaked = false;
+            states.continueInterrupted = true;
+            states.breaked = false;
             reverseClock();
+        });
+    document.getElementById('continue')
+        .addEventListener('click', e => {
+            states.breaked = false;
+            if (states.continueInterrupted) {
+                states.continueInterrupted = false;
+                doContinue();
+            } else {
+                states.continueInterrupted = true;
+            }
         });
     document.getElementById('copy_prog_mem')
         .addEventListener('click', () => {
@@ -341,13 +389,16 @@ document.body.addEventListener('keydown', e => {
         return;
     }
     if (e.key === 'ArrowRight') {
-        if (breaked) {
+        states.continueInterrupted = true;
+
+        if (states.breaked) {
             return;
         }
 
         clock();
     } else if (e.key === 'ArrowLeft') {
-        breaked = false;
+        states.breaked = false;
+        states.continueInterrupted = true;
         reverseClock();
     }
 });
