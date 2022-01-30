@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
         try {
             if (current_op == "n") {
                 emu.clock();
+                emu.set_enable_trap(true);
             } else if (current_op == "rn") {
                 emu.reverse_next_clock();
             } else if (current_op.substr(0, 2) == "b ") {
@@ -72,7 +73,9 @@ int main(int argc, char **argv) {
         } catch (const exasm::ExecutionError &e) {
             std::cerr << e.what() << '\n';
             return 1;
-        } catch (const exasm::Breakpoint &) {}
+        } catch (const exasm::Breakpoint &) {
+            emu.set_enable_trap(false);
+        }
     }
 finish:
 

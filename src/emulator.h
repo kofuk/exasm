@@ -62,7 +62,8 @@ namespace exasm {
             return eh;
         }
 
-        static ExecHistory of_change_mem(std::uint16_t addr, std::uint8_t old_val) {
+        static ExecHistory of_change_mem(std::uint16_t addr,
+                                         std::uint8_t old_val) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_MEM;
             eh.event_info.change_mem.addr = addr;
@@ -70,7 +71,8 @@ namespace exasm {
             return eh;
         }
 
-        static ExecHistory of_change_reg(std::uint8_t regnum, std::uint16_t old_val) {
+        static ExecHistory of_change_reg(std::uint8_t regnum,
+                                         std::uint16_t old_val) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_REG;
             eh.event_info.change_reg.regnum = regnum;
@@ -85,7 +87,7 @@ namespace exasm {
         std::array<std::uint16_t, 8> reg;
 
         std::vector<std::uint16_t> breakpoints;
-        bool breaked = false;
+        bool enable_trap = true;
 
         std::uint16_t pc = 0;
         bool is_branch_delayed = false;
@@ -101,6 +103,8 @@ namespace exasm {
         void record_exec_history(ExecHistory &&hist) {
             exec_history.push_back(std::move(hist));
         }
+
+        bool should_trap(std::uint16_t addr) const;
 
     public:
         Emulator() {
@@ -128,7 +132,8 @@ namespace exasm {
 
         void set_memory(std::uint16_t addr, std::uint8_t val) {
             if (enable_exec_history) {
-                record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
+                record_exec_history(
+                    ExecHistory::of_change_mem(addr, mem[addr]));
             }
 
             mem[addr] = val;
@@ -138,7 +143,8 @@ namespace exasm {
 
         void set_register(std::uint8_t regnum, std::uint16_t val) {
             if (enable_exec_history) {
-                record_exec_history(ExecHistory::of_change_reg(regnum, reg[regnum]));
+                record_exec_history(
+                    ExecHistory::of_change_reg(regnum, reg[regnum]));
             }
 
             reg[regnum] = val;
@@ -154,6 +160,7 @@ namespace exasm {
         void load_memfile(std::istream &strm);
         void set_breakpoint(std::uint16_t addr);
         void remove_breakpoint(std::uint16_t addr);
+        void set_enable_trap(bool enable) { enable_trap = enable; }
 
         std::uint16_t clock();
 

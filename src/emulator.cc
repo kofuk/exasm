@@ -85,6 +85,11 @@ namespace exasm {
         }
     }
 
+    bool Emulator::should_trap(std::uint16_t addr) const {
+        auto bp = std::find(breakpoints.begin(), breakpoints.end(), addr);
+        return enable_trap && bp != breakpoints.end();
+    }
+
     std::uint16_t Emulator::clock() {
         std::uint16_t delayed_addr_save = delayed_addr;
         bool is_branch_delayed_save = is_branch_delayed;
@@ -111,20 +116,16 @@ namespace exasm {
             is_branch_delayed = false;
         }
 
-        if (enable_exec_history) {
-            record_exec_history(ExecHistory::of_change_pc(
-                pc, delayed_addr_save, is_branch_delayed_save));
-        }
-
-        auto bp = std::find(breakpoints.begin(), breakpoints.end(), exec_addr);
-        if (!breaked && bp != breakpoints.end()) {
-            breaked = true;
-            // restore state
+        if (should_trap(exec_addr)) {
             delayed_addr = delayed_addr_save;
             is_branch_delayed = is_branch_delayed_save;
             throw Breakpoint(exec_addr);
         }
-        breaked = false;
+
+        if (enable_exec_history) {
+            record_exec_history(ExecHistory::of_change_pc(
+                pc, delayed_addr_save, is_branch_delayed_save));
+        }
 
         pc += 2;
 
@@ -304,7 +305,5 @@ namespace exasm {
         throw std::runtime_error("Couldn't find last executed address");
     }
 
-    int Emulator::get_estimated_clock_count() const {
-        return clock_count + 3;
-    }
+    int Emulator::get_estimated_clock_count() const { return clock_count + 3; }
 } // namespace exasm

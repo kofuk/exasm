@@ -34,7 +34,16 @@ __attribute__((used)) const std::uint8_t *get_memory(EmulatorWrapper *ew) {
 
 __attribute__((used)) std::uint16_t next_clock(EmulatorWrapper *ew) {
     try {
-        return ew->emu->clock();
+        std::uint16_t addr;
+        if (breakpoint_hit) {
+            breakpoint_hit = false;
+            ew->emu->set_enable_trap(false);
+            addr = ew->emu->clock();
+            ew->emu->set_enable_trap(true);
+        } else {
+            addr = ew->emu->clock();
+        }
+        return addr;
     } catch (exasm::ExecutionError &e) {
         std::cerr << e.what() << '\n';
     } catch (exasm::Breakpoint &bp) {
@@ -95,7 +104,6 @@ __attribute__((used)) void remove_breakpoint(EmulatorWrapper *ew,
 
 __attribute__((used)) int get_hit_breakpoint() {
     if (breakpoint_hit) {
-        breakpoint_hit = false;
         return static_cast<std::uint32_t>(break_addr);
     }
     return -1;
@@ -146,7 +154,10 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile,
     return ew;
 }
 
-__attribute__((used)) void destroy_emulator(EmulatorWrapper *ew) { delete ew; }
+__attribute__((used)) void destroy_emulator(EmulatorWrapper *ew) {
+    delete ew;
+    breakpoint_hit = true;
+}
 
 __attribute__((used)) char *serialize_mem(EmulatorWrapper *ew) {
     std::ostringstream strm;
