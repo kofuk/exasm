@@ -1,6 +1,6 @@
-insts = files('isa/basic.json')
+insts = files('../isa/basic.json')
 if get_option('ex_inst_t').enabled()
-  insts += files('isa/ex_t.json')
+  insts += files('../isa/ex_t.json')
 endif
 
 python = find_program('python3')
