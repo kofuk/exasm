@@ -1,0 +1,198 @@
+[
+    {
+        "name": "nop",
+        "type": "reg_arith",
+        "args": [],
+        "opcode": "0000",
+        "action": ""
+    },
+    {
+        "name": "mov",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0001",
+        "action": "setreg(rd, reg[rs])"
+    },
+    {
+        "name": "not",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0010",
+        "action": "setreg(rd, ~reg[rs])"
+    },
+    {
+        "name": "xor",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0011",
+        "action": "setreg(rd, reg[rd] ^ reg[rs])"
+    },
+    {
+        "name": "add",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0100",
+        "action": "setreg(rd, reg[rd] + reg[rs])"
+    },
+    {
+        "name": "sub",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0101",
+        "action": "setreg(rd, reg[rd] - reg[rs])"
+    },
+    {
+        "name": "sl8",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0110",
+        "action": "setreg(rd, reg[rs] << 8)"
+    },
+    {
+        "name": "sr8",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "0111",
+        "action": "setreg(rd, reg[rs] >> 8)"
+    },
+    {
+        "name": "sl",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1000",
+        "action": "setreg(rd, reg[rs] << 1)"
+    },
+    {
+        "name": "sr",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1001",
+        "action": "setreg(rd, reg[rs] >> 1)"
+    },
+    {
+        "name": "and",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1010",
+        "action": "setreg(rd, reg[rd] & reg[rs])"
+    },
+    {
+        "name": "or",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1011",
+        "action": "setreg(rd, reg[rd] | reg[rs])"
+    },
+    {
+        "name": "addi",
+        "type": "imm",
+        "args": ["rd", "imm"],
+        "opcode": "0100",
+        "signed_imm": true,
+        "action": "setreg(rd, reg[rd] + sword(imm))"
+    },
+    {
+        "name": "andi",
+        "type": "imm",
+        "args": ["rd", "imm"],
+        "opcode": "1010",
+        "signed_imm": false,
+        "action": "setreg(rd, reg[rd] & uword(imm))"
+    },
+    {
+        "name": "ori",
+        "type": "imm",
+        "args": ["rd", "imm"],
+        "opcode": "1011",
+        "signed_imm": false,
+        "action": "setreg(rd, reg[rd] | uword(imm))"
+    },
+    {
+        "name": "lli",
+        "type": "imm",
+        "args": ["rd", "imm"],
+        "opcode": "0001",
+        "signed_imm": false,
+        "action": "setreg(rd, uword(imm))"
+    },
+    {
+        "name": "lui",
+        "type": "imm",
+        "args": ["rd", "imm"],
+        "opcode": "0110",
+        "signed_imm": false,
+        "action": "setreg(rd, uword(imm) << 8)"
+    },
+    {
+        "name": "beqz",
+        "type": "branch",
+        "args": ["rd", "imm"],
+        "opcode": "0000",
+        "signed_imm": true,
+        "action": "reg[rd] == uword(0)"
+    },
+    {
+        "name": "bnez",
+        "type": "branch",
+        "args": ["rd", "imm"],
+        "opcode": "0001",
+        "signed_imm": true,
+        "action": "reg[rd] != uword(0)"
+    },
+    {
+        "name": "bmi",
+        "type": "branch",
+        "args": ["rd", "imm"],
+        "opcode": "0010",
+        "signed_imm": true,
+        "action": "sword(reg[rd]) < 0"
+    },
+    {
+        "name": "bpl",
+        "type": "branch",
+        "args": ["rd", "imm"],
+        "opcode": "0011",
+        "signed_imm": true,
+        "action": "sword(reg[rd]) >= 0"
+    },
+    {
+        "name": "j",
+        "type": "branch",
+        "args": ["imm"],
+        "opcode": "1000",
+        "signed_imm": true,
+        "action": "true"
+    },
+    {
+        "name": "sw",
+        "type": "mem",
+        "args": ["rd", "addr"],
+        "opcode": "0000",
+        "word_align": true,
+        "action": "setmem(addr, ubyte(reg[rd] >> 8)); setmem(addr + 1, ubyte(reg[rd] & 0xFF));"
+    },
+    {
+        "name": "lw",
+        "type": "mem",
+        "args": ["rd", "addr"],
+        "opcode": "0001",
+        "word_align": true,
+        "action": "setreg(rd, uword(getmem(addr) << 8) | getmem(addr + 1))"
+    },
+    {
+        "name": "sbu",
+        "type": "mem",
+        "args": ["rd", "addr"],
+        "opcode": "0010",
+        "word_align": false,
+        "action": "setmem(addr, ubyte(reg[rd]))"
+    },
+    {
+        "name": "lbu",
+        "type": "mem",
+        "args": ["rd", "addr"],
+        "opcode": "0011",
+        "word_align": false,
+        "action": "setreg(rd, ubyte(getmem(addr)))"
+    }
+]

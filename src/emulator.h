@@ -130,6 +130,8 @@ namespace exasm {
             return mem;
         }
 
+        std::uint8_t get_memory(std::uint16_t addr) const { return mem[addr]; }
+
         void set_memory(std::uint16_t addr, std::uint8_t val) {
             if (enable_exec_history) {
                 record_exec_history(

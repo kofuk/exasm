@@ -78,8 +78,10 @@ __attribute__((used)) char *dump_program(EmulatorWrapper *ew) {
     try {
         for (const exasm::Inst &i : ew->emu->get_program()) {
             exasm::write_addr(ostrm, addr) << ' ';
-            i.print_bin(ostrm) << " // ";
-            ostrm << i << '\n';
+            i.print_bin(ostrm);
+            ostrm << " // ";
+            i.print_asm(ostrm);
+            ostrm << '\n';
             addr += 2;
         }
     } catch (exasm::ParseError &e) {

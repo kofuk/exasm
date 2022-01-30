@@ -11,8 +11,10 @@ int main() {
     try {
         for (exasm::Inst &i : reader.read_all()) {
             exasm::write_addr(std::cout, addr) << ' ';
-            i.print_bin(std::cout) << " // ";
-            std::cout << i << '\n';
+            i.print_bin(std::cout);
+            std::cout << " // ";
+            i.print_asm(std::cout);
+            std::cout << '\n';
             addr += 2;
         }
     } catch (exasm::ParseError &e) {

@@ -1,5 +1,51 @@
-asmio_lib = static_library('asmio', 'asmio.cc')
-emulator_lib = static_library('emulator', 'emulator.cc')
+insts = files('isa/basic.json')
+if get_option('ex_inst_t').enabled()
+  insts += files('isa/ex_t.json')
+endif
+
+python = find_program('python3')
+
+inst_type_enum_inc = custom_target(
+  output : ['inst_type_enum.inc'],
+  input : ['generate_inst_type_enum.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+inst_name_to_enum_inc = custom_target(
+  output : ['inst_name_to_enum.inc'],
+  input : ['generate_inst_name_to_enum.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+asm_parser_inc = custom_target(
+  output : ['asm_parser.inc'],
+  input : ['generate_asm_parser.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+executor_inc = custom_target(
+  output : ['executor.inc'],
+  input : ['generate_executor.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+inst_mem_writer_inc = custom_target(
+  output : ['inst_mem_writer.inc'],
+  input : ['generate_inst_mem_writer.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+asm_writer_inc = custom_target(
+  output : ['asm_writer.inc'],
+  input : ['generate_asm_writer.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+
+asmio_lib = static_library(
+  'asmio', 'asmio.cc',
+  inst_type_enum_inc, inst_name_to_enum_inc,
+  asm_parser_inc, inst_mem_writer_inc,
+  asm_writer_inc,
+)
+emulator_lib = static_library(
+  'emulator', 'emulator.cc',
+  inst_type_enum_inc, executor_inc,
+)
 
 if host_machine.system() == 'emscripten'
   fs = import('fs')

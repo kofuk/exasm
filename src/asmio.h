@@ -6,41 +6,11 @@
 #include <vector>
 
 namespace exasm {
-    enum class InstType {
-        NOP,
-        MOV,
-        NOT,
-        XOR,
-        ADD,
-        SUB,
-        SL8,
-        SR8,
-        SL,
-        SR,
-        AND,
-        OR,
-        ADDI,
-        ANDI,
-        ORI,
-        LLI,
-        LUI,
-        SW,
-        LW,
-        SBU,
-        LBU,
-        BEQZ,
-        BNEZ,
-        BMI,
-        BPL,
-        J,
-#ifdef EXTEND_T
-        SR4,
-#endif
-    };
+    enum class InstType;
 
     class Inst {
     public:
-        InstType inst = InstType::NOP;
+        InstType inst;
         std::uint8_t rd;
         std::uint8_t rs;
         std::uint8_t imm;
@@ -49,7 +19,7 @@ namespace exasm {
         bool imm_inst = false;
         bool jump_inst = false;
 
-        Inst() {}
+        Inst(InstType inst) : inst(inst) {}
 
         Inst(InstType inst, std::uint8_t rd, std::uint8_t rs, bool reg_arith)
             : inst(std::move(inst)), rd(rd), rs(rs) {
@@ -66,15 +36,10 @@ namespace exasm {
         Inst(InstType inst, std::uint8_t imm)
             : inst(inst), imm(imm), jump_inst(true) {}
 
-        std::ostream &print_asm_operand(std::ostream &out) const;
+        void print_asm(std::ostream &out) const;
 
-        std::ostream &print_bin(std::ostream &out) const;
-
-        bool needs_delay_slot() const;
+        void print_bin(std::ostream &out) const;
     };
-
-    std::ostream &operator<<(std::ostream &out, InstType ty);
-    std::ostream &operator<<(std::ostream &out, const Inst &inst);
 
     class ParseError : public std::runtime_error {
     public:

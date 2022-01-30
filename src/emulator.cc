@@ -5,6 +5,7 @@
 
 #include "asmio.h"
 #include "emulator.h"
+#include "insts.h"
 
 namespace exasm {
     namespace {
@@ -123,124 +124,7 @@ namespace exasm {
         pc += 2;
 
         switch (inst.inst) {
-        case InstType::NOP:
-            break;
-#ifdef EXTEND_T
-        case InstType::SR4:
-            set_register(inst.rd, reg[inst.rs] >> 4);
-            break;
-#endif
-        case InstType::MOV:
-            set_register(inst.rd, reg[inst.rs]);
-            break;
-        case InstType::NOT:
-            set_register(inst.rd, ~reg[inst.rs]);
-            break;
-        case InstType::XOR:
-            set_register(inst.rd, reg[inst.rd] ^ reg[inst.rs]);
-            break;
-        case InstType::ADD:
-            set_register(inst.rd, reg[inst.rd] + reg[inst.rs]);
-            break;
-        case InstType::SUB:
-            set_register(inst.rd, reg[inst.rd] - reg[inst.rs]);
-            break;
-        case InstType::SL8:
-            set_register(inst.rd, reg[inst.rs] << 8);
-            break;
-        case InstType::SR8:
-            set_register(inst.rd, reg[inst.rs] >> 8);
-            break;
-        case InstType::SL:
-            set_register(inst.rd, reg[inst.rs] << 1);
-            break;
-        case InstType::SR:
-            set_register(inst.rd, reg[inst.rs] >> 1);
-            break;
-        case InstType::AND:
-            set_register(inst.rd, reg[inst.rd] & reg[inst.rs]);
-            break;
-        case InstType::OR:
-            set_register(inst.rd, reg[inst.rd] | reg[inst.rs]);
-            break;
-        case InstType::ADDI:
-            set_register(inst.rd, reg[inst.rd] + sign_extend(inst.imm));
-            break;
-        case InstType::ANDI:
-            set_register(inst.rd, reg[inst.rd] & inst.imm);
-            break;
-        case InstType::ORI:
-            set_register(inst.rd, reg[inst.rd] | inst.imm);
-            break;
-        case InstType::LLI:
-            set_register(inst.rd, inst.imm);
-            break;
-        case InstType::LUI:
-            set_register(inst.rd, inst.imm << 8);
-            break;
-        case InstType::SW:
-            if (reg[inst.rs] % 2 != 0) {
-                throw ExecutionError(
-                    "Destination for `sw' instruction is not well aligned");
-            }
-            {
-                std::uint16_t addr = reg[inst.rs];
-                set_memory(addr, static_cast<std::uint8_t>(reg[inst.rd] >> 8));
-                set_memory(addr + 1,
-                           static_cast<std::uint8_t>(reg[inst.rd] & 0xFF));
-            }
-            break;
-        case InstType::LW:
-            if (reg[inst.rs] % 2 != 0) {
-                throw ExecutionError(
-                    "Destination for `lw' instruction is not well aligned");
-            }
-            {
-                std::uint16_t addr = reg[inst.rs];
-                std::uint16_t val = static_cast<std::uint16_t>(mem[addr]) << 8;
-                val |= static_cast<std::uint16_t>(mem[addr + 1]);
-                set_register(inst.rd, val);
-            }
-            break;
-        case InstType::SBU:
-            set_memory(reg[inst.rs], static_cast<std::uint8_t>(reg[inst.rd]));
-            break;
-        case InstType::LBU:
-            set_register(inst.rd, static_cast<std::uint8_t>(mem[reg[inst.rs]]));
-            break;
-        case InstType::BEQZ:
-            if (reg[inst.rd] == 0) {
-                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
-                delay_slot_rem = 1;
-                is_delay_slot = true;
-            }
-            break;
-        case InstType::BNEZ:
-            if (reg[inst.rd] != 0) {
-                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
-                delay_slot_rem = 1;
-                is_delay_slot = true;
-            }
-            break;
-        case InstType::BMI:
-            if (reg[inst.rd] >> 15 != 0) {
-                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
-                delay_slot_rem = 1;
-                is_delay_slot = true;
-            }
-            break;
-        case InstType::BPL:
-            if (reg[inst.rd] >> 15 == 0) {
-                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
-                delay_slot_rem = 1;
-                is_delay_slot = true;
-            }
-            break;
-        case InstType::J:
-            branched_pc = exec_addr + 2 + sign_extend(inst.imm);
-            delay_slot_rem = 1;
-            is_delay_slot = true;
-            break;
+#include "executor.inc"
         default:
             throw ExecutionError("Unsupported instruction");
         }

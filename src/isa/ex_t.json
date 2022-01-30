@@ -1,0 +1,9 @@
+[
+    {
+        "name": "sr4",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1100",
+        "action": "setreg(rd, reg[rs] >> 4)"
+    }
+]

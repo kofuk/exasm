@@ -24,8 +24,10 @@ int main(int argc, char **argv) {
     try {
         for (exasm::Inst &i : reader.read_all()) {
             exasm::write_addr(out, addr) << ' ';
-            i.print_bin(out) << " // ";
-            out << i << '\n';
+            i.print_bin(out);
+            out << " // ";
+            i.print_asm(out);
+            out << '\n';
             addr += 2;
         }
     } catch (exasm::ParseError &e) {
