@@ -271,7 +271,10 @@ const doContinue = () => {
 
     for (let i = 0; i < 10; i++) {
         clock();
-        if (states.breaked || states.continueInterrupted) {
+        if (states.breaked) {
+            states.continueInterrupted = true;
+            return;
+        } else if (states.continueInterrupted) {
             return;
         }
     }
