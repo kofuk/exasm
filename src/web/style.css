@@ -23,6 +23,12 @@ body {
     margin-top: 10px;
 }
 
+.pane {
+    border: solid 2px #555;
+    margin: 2px;
+    padding: 5px;
+}
+
 .source-pane {
     min-width: 300px;
     margin-left: 8px;
@@ -53,6 +59,10 @@ textarea {
     overflow: auto;
 }
 
+.breakpoint-pane {
+    flex: 1;
+}
+
 @keyframes blink {
     from {
         background-color: yellow;
@@ -71,4 +81,8 @@ textarea {
 
 .break {
     background-color: red !important;
+}
+
+.breakpoint-table {
+    width: 100%;
 }

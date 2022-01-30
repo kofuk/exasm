@@ -19,7 +19,7 @@
     </div>
 
     <div class="container">
-      <div class="source-pane">
+      <div class="source-pane pane">
         <form>
           <textarea id="prog" rows="15" placeholder="Program (assembly)">
 lli r0, 0x30 # first word
@@ -45,7 +45,7 @@ nop</textarea><br/>
           <a href="https://github.com/kofuk/exasm">View source code on GitHub</a>
         </div>
       </div>
-      <div class="run-pane">
+      <div class="run-pane pane">
         <div id="status" class="status-bar"></div>
 
         <div>
@@ -121,6 +121,18 @@ nop</textarea><br/>
             <tbody id="trace_body"></tbody>
           </table>
         </div>
+      </div>
+      <div class="breakpoint-pane pane">
+        Breakpoints:
+        <table border="1" class="breakpoint-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Condition</th>
+              </tr>
+            </thead>
+            <tbody id="breakpoint_table_body"></tbody>
+        </table>
       </div>
     </div>
 

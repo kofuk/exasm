@@ -135,9 +135,14 @@ const createTraceTable = () => {
                     return;
                 }
                 if (e.target.checked) {
+                    states.breakpoints = states.breakpoints.concat({pc: addr}).sort((a, b) => {
+                        if (typeof a.pc === 'undefined' || typeof b.pc === 'undefined') return 0;
+                        return a.pc < b.pc ? -1 : 1;
+                    });
                     Module.ccall('set_breakpoint', 'number', ['number', 'number'],
                                  [emulator, addr]);
                 } else {
+                    states.breakpoints = states.breakpoints.filter(e => typeof e.pc === 'undefined' || e.pc !== addr);
                     Module.ccall('remove_breakpoint', 'number', ['number', 'number'],
                                  [emulator, addr]);
                 }
@@ -174,6 +179,7 @@ const states = new Proxy(
     {
         continueInterrupted: true,
         breaked: false,
+        breakpoints: [],
     },
     {
         set: (obj, prop, value) => {
@@ -182,6 +188,31 @@ const states = new Proxy(
                     document.getElementById('continue').value = value ? 'Continue' : 'Interrupt';
                 } else if (prop === 'breaked') {
                     document.getElementById('clock').value = value ? 'Next clock' : 'Next clock (→)';
+                } else if (prop == 'breakpoints') {
+                    const table = document.getElementById('breakpoint_table_body');
+                    table.innerHTML = '';
+                    value.forEach(e => {
+                        const tr = document.createElement('tr');
+                        const controllTd = document.createElement('td');
+                        const deleteButton = document.createElement('input');
+                        deleteButton.type = 'button';
+                        deleteButton.value = '×';
+                        deleteButton.addEventListener('click', () => {
+                            if (typeof e.pc !== 'undefined') {
+                                document.getElementById('break' + e.pc).click();
+                            }
+                        });
+                        controllTd.appendChild(deleteButton);
+                        tr.appendChild(controllTd);
+
+                        const conditionTd = document.createElement('td');
+                        if (typeof e.pc !== 'undefined') {
+                            conditionTd.innerText = `Fetch 0x${e.pc.toString(16)}`;
+                        }
+                        tr.appendChild(conditionTd);
+
+                        table.appendChild(tr);
+                    });
                 }
 
                 obj[prop] = value;
@@ -395,8 +426,10 @@ document.body.addEventListener('keydown', e => {
             return;
         }
 
+        e.preventDefault();
         clock();
     } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
         states.breaked = false;
         states.continueInterrupted = true;
         reverseClock();
