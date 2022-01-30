@@ -41,3 +41,12 @@ You need C++ compiler installed on your system.
 $ meson . _build && cd _build
 $ ninja
 ```
+
+## Adding instructions
+
+Most of code is generated from `isa/*.json`.
+To add new instructions, all you have to do is editing the JSON files
+in most situations.
+
+If you're about to add your original instruction, you should instroduce these
+in a separate JSON file and add a new feature in `meson_options.txt`.
