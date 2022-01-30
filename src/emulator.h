@@ -37,8 +37,8 @@ namespace exasm {
         union {
             struct {
                 std::uint16_t old_pc;
-                std::uint16_t old_delayed_addr;
-                bool old_is_branch_delayed;
+                std::uint16_t old_delay_slot_rem;
+                bool old_is_delay_slot;
             } change_pc;
             struct {
                 std::uint16_t addr;
@@ -51,14 +51,13 @@ namespace exasm {
         } event_info;
 
         static ExecHistory of_change_pc(std::uint16_t old_pc,
-                                        std::uint16_t old_delayed_addr,
-                                        bool old_is_branch_delayed) {
+                                        int old_delay_slot_rem,
+                                        bool old_is_delay_slot) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_PC;
             eh.event_info.change_pc.old_pc = old_pc;
-            eh.event_info.change_pc.old_delayed_addr = old_delayed_addr;
-            eh.event_info.change_pc.old_is_branch_delayed =
-                old_is_branch_delayed;
+            eh.event_info.change_pc.old_delay_slot_rem = old_delay_slot_rem;
+            eh.event_info.change_pc.old_is_delay_slot = old_is_delay_slot;
             return eh;
         }
 
@@ -90,8 +89,9 @@ namespace exasm {
         bool enable_trap = true;
 
         std::uint16_t pc = 0;
-        bool is_branch_delayed = false;
-        std::uint16_t delayed_addr;
+        bool is_delay_slot = false;
+        int delay_slot_rem = 0;
+        std::uint16_t branched_pc;
 
         bool enable_exec_history = false;
         std::list<ExecHistory> exec_history;

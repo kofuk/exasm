@@ -47,6 +47,8 @@ lli r1, 1
 sw r1, (r0)
 addi r0, 2
 
-bmi r1, 2 # Check delay slot
-addi r1, -1
+lli r2, 0
+addi r1, 0x01
+beqz r2, -0x04
+lli r2, 0x01
 sw r1, (r0)

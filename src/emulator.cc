@@ -91,42 +91,35 @@ namespace exasm {
     }
 
     std::uint16_t Emulator::clock() {
-        std::uint16_t delayed_addr_save = delayed_addr;
-        bool is_branch_delayed_save = is_branch_delayed;
+        bool is_delay_slot_save = is_delay_slot;
+        int delay_slot_rem_save = delay_slot_rem;
 
-        std::uint16_t exec_addr = pc;
-        if (is_branch_delayed) {
-            exec_addr = delayed_addr;
+        if (is_delay_slot) {
+            if (delay_slot_rem == 0) {
+                is_delay_slot = false;
+                pc = branched_pc;
+            } else {
+                --delay_slot_rem;
+            }
         }
+        std::uint16_t exec_addr = pc;
 
         if (exec_addr / 2 >= prog.size()) {
             throw ExecutionError("Program finished");
         }
 
-        Inst inst = prog[exec_addr / 2];
-        if (!is_branch_delayed && inst.needs_delay_slot()) {
-            delayed_addr = pc;
-            is_branch_delayed = true;
-            exec_addr = pc + 2;
-            if (exec_addr / 2 >= prog.size()) {
-                throw ExecutionError("Program finished");
-            }
-            inst = prog[exec_addr / 2];
-        } else if (is_branch_delayed) {
-            is_branch_delayed = false;
-        }
-
         if (should_trap(exec_addr)) {
-            delayed_addr = delayed_addr_save;
-            is_branch_delayed = is_branch_delayed_save;
+            is_delay_slot = is_delay_slot_save;
+            delay_slot_rem = delay_slot_rem_save;
             throw Breakpoint(exec_addr);
         }
 
         if (enable_exec_history) {
             record_exec_history(ExecHistory::of_change_pc(
-                pc, delayed_addr_save, is_branch_delayed_save));
+                pc, delay_slot_rem_save, is_delay_slot_save));
         }
 
+        Inst inst = prog[exec_addr / 2];
         pc += 2;
 
         switch (inst.inst) {
@@ -217,26 +210,36 @@ namespace exasm {
             break;
         case InstType::BEQZ:
             if (reg[inst.rd] == 0) {
-                pc = exec_addr + 2 + sign_extend(inst.imm);
+                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
+                delay_slot_rem = 1;
+                is_delay_slot = true;
             }
             break;
         case InstType::BNEZ:
             if (reg[inst.rd] != 0) {
-                pc = exec_addr + 2 + sign_extend(inst.imm);
+                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
+                delay_slot_rem = 1;
+                is_delay_slot = true;
             }
             break;
         case InstType::BMI:
             if (reg[inst.rd] >> 15 != 0) {
-                pc = exec_addr + 2 + sign_extend(inst.imm);
+                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
+                delay_slot_rem = 1;
+                is_delay_slot = true;
             }
             break;
         case InstType::BPL:
             if (reg[inst.rd] >> 15 == 0) {
-                pc = exec_addr + 2 + sign_extend(inst.imm);
+                branched_pc = exec_addr + 2 + sign_extend(inst.imm);
+                delay_slot_rem = 1;
+                is_delay_slot = true;
             }
             break;
         case InstType::J:
-            pc = exec_addr + 2 + sign_extend(inst.imm);
+            branched_pc = exec_addr + 2 + sign_extend(inst.imm);
+            delay_slot_rem = 1;
+            is_delay_slot = true;
             break;
         default:
             throw ExecutionError("Unsupported instruction");
@@ -272,9 +275,8 @@ namespace exasm {
             switch (eh.type) {
             case ExecHistoryType::CHANGE_PC:
                 pc = eh.event_info.change_pc.old_pc;
-                delayed_addr = eh.event_info.change_pc.old_delayed_addr;
-                is_branch_delayed =
-                    eh.event_info.change_pc.old_is_branch_delayed;
+                is_delay_slot = eh.event_info.change_pc.old_is_delay_slot;
+                delay_slot_rem = eh.event_info.change_pc.old_delay_slot_rem;
                 goto end;
             case ExecHistoryType::CHANGE_MEM:
                 mem[eh.event_info.change_mem.addr] =
@@ -294,11 +296,6 @@ namespace exasm {
         for (auto itr = exec_history.rbegin(), e = exec_history.rend();
              itr != e; ++itr) {
             if ((*itr).type == ExecHistoryType::CHANGE_PC) {
-                if (is_branch_delayed) {
-                    return (*itr).event_info.change_pc.old_pc + 2;
-                } else if ((*itr).event_info.change_pc.old_is_branch_delayed) {
-                    return (*itr).event_info.change_pc.old_pc - 2;
-                }
                 return (*itr).event_info.change_pc.old_pc;
             }
         }
