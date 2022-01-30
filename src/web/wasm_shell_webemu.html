@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body style="font-family:monospace">
-    <div style="position:sticky; left:0; top:0; background:lightblue; border-bottom:2px solid black; padding:8px">
+    <div style="position:sticky; left:0; top:0; background:lightblue; border-bottom:2px solid black; padding:8px; x-index:2">
       <input type="button" value="Load mem and program" id="prog_init" />
       Memory: <input type="text" size="3" id="mem_start" value="0x34" />--<input type="text" size="3" id="mem_end" value="0x40" /><input type="button" value="Set range" id="set_range" />
       <input type="button" value="Reverse next (←)" id="reverse_clock" />
@@ -19,7 +19,7 @@
     </div>
 
     <div style="display:flex">
-      <div style="flex:1">
+      <div style="min-width:300px">
         <form>
           <textarea id="prog" rows="15" placeholder="Program (assembly)" style="width:90%">
 lli r0, 0x30 # first word
@@ -45,7 +45,7 @@ nop</textarea><br/>
           <a href="https://github.com/kofuk/exasm">View source code on GitHub</a>
         </div>
       </div>
-      <div style="flex:2">
+      <div style="min-width:600px">
         <div id="status" style="background:lightgreen"></div>
 
         <div>
