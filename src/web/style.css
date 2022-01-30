@@ -1,3 +1,58 @@
+body {
+    font-family: monospace;
+    margin: 0;
+    padding: 0;
+}
+
+.controll-bar {
+    position: sticky;
+    left: 0;
+    top: 0;
+    background: lightblue;
+    border-bottom: 2px solid black;
+    padding: 8px;
+    x-index: 2;
+}
+
+.error-bar {
+    background-color: yellow;
+}
+
+.container {
+    display: flex;
+    margin-top: 10px;
+}
+
+.source-pane {
+    min-width: 300px;
+    margin-left: 8px;
+    flex: 1;
+}
+
+textarea {
+    width: 90%;
+}
+
+.run-pane {
+    flex: 2;
+}
+
+.status-bar {
+    background: lightgreen;
+}
+
+.tip {
+    color: gray;
+    font-size: 12px;
+    padding-left: 10px;
+}
+
+.trace-table {
+    display: block;
+    max-height: 350px;
+    overflow: auto;
+}
+
 @keyframes blink {
     from {
         background-color: yellow;
