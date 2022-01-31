@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "asmio.h"
 #include "emulator.h"
@@ -92,15 +94,16 @@ namespace exasm {
     }
 
     std::uint16_t Emulator::clock() {
-        bool is_delay_slot_save = is_delay_slot;
-        int delay_slot_rem_save = delay_slot_rem;
+        std::vector<std::function<void()>> transaction;
 
         if (is_delay_slot) {
             if (delay_slot_rem == 0) {
-                is_delay_slot = false;
+                transaction.emplace_back([&] {
+                    is_delay_slot = false;
+                });
                 pc = branched_pc;
             } else {
-                --delay_slot_rem;
+                transaction.emplace_back([&] { --delay_slot_rem; });
             }
         }
         std::uint16_t exec_addr = pc;
@@ -110,23 +113,27 @@ namespace exasm {
         }
 
         if (should_trap(exec_addr)) {
-            is_delay_slot = is_delay_slot_save;
-            delay_slot_rem = delay_slot_rem_save;
             throw Breakpoint(exec_addr);
         }
 
-        if (enable_exec_history) {
-            record_exec_history(ExecHistory::of_change_pc(
-                pc, delay_slot_rem_save, is_delay_slot_save));
-        }
-
         Inst inst = prog[exec_addr / 2];
-        pc += 2;
+        transaction.emplace_back([&] {
+            if (enable_exec_history) {
+                record_exec_history(ExecHistory::of_change_pc(
+                                        pc, delay_slot_rem, is_delay_slot));
+            }
+            pc += 2;
+        });
 
         switch (inst.inst) {
 #include "executor.inc"
         default:
             throw ExecutionError("Unsupported instruction");
+        }
+
+        // commit the transaction
+        for (const std::function<void()> &f : transaction) {
+            f();
         }
 
         ++clock_count;

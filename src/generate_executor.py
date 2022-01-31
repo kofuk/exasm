@@ -32,11 +32,13 @@ if __name__ == '__main__':
 
             if inst['type'] == 'branch':
                 out.write(f'    if ({code}) ''{\n')
-                out.write('        branched_pc = exec_addr + 2 + sign_extend(inst.imm);\n')
-                out.write('        delay_slot_rem = 1;')
-                out.write('        is_delay_slot = true;')
+                out.write('        transaction.emplace_back([&] {\n')
+                out.write('            branched_pc = exec_addr + 2 + sign_extend(inst.imm);\n')
+                out.write('            delay_slot_rem = 1;\n')
+                out.write('            is_delay_slot = true;\n')
+                out.write('        });\n')
                 out.write('    }\n')
             else:
-                out.write(f'    {code};\n')
+                out.write('    transaction.emplace_back([&] {%s;});\n'%(code))
             out.write('    break;\n')
             out.write('}\n')
