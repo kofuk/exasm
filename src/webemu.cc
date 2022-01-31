@@ -171,8 +171,9 @@ __attribute__((used)) char *serialize_mem(EmulatorWrapper *ew) {
     strm << "};for(i=0;i<0x10000;++i)mem[i]=t[i];}\n";
 
     char *result = new char[strm.str().size() + 1];
-    std::copy(strm.str().begin(), strm.str().end(), result);
-    result[strm.str().size()] = '\0';
+    const std::string &&str = strm.str();
+    std::copy(str.begin(), str.end(), result);
+    result[str.size()] = '\0';
     return result;
 }
 
