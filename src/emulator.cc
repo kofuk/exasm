@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <functional>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -13,6 +15,31 @@ namespace exasm {
     namespace {
         std::int16_t sign_extend(std::uint8_t num) {
             return static_cast<std::int16_t>(static_cast<std::int8_t>(num));
+        }
+
+        [[maybe_unused]] std::ostream &operator<<(std::ostream &out,
+                                                  const ExecHistory &eh) {
+            switch (eh.type) {
+            case ExecHistoryType::CHANGE_PC:
+                out << "ExecHistoryType::CHANGE_PC{old_pc: "
+                    << eh.event.pc.old_pc
+                    << ", old_branched_pc: " << eh.event.pc.old_branched_pc
+                    << ", old_delay_slot_rem: "
+                    << eh.event.pc.old_delay_slot_rem
+                    << ", old_is_delay_slot: " << eh.event.pc.old_is_delay_slot
+                    << "}";
+                break;
+            case ExecHistoryType::CHANGE_REG:
+                out << "ExecHistoryType::CHANGE_REG{regnum: "
+                    << +eh.event.reg.regnum
+                    << ", old_val: " << eh.event.reg.old_val << "}";
+                break;
+            case ExecHistoryType::CHANGE_MEM:
+                out << "ExecHistoryType::CHANGE_MEM{addr: " << eh.event.mem.addr
+                    << ", old_val: " << +eh.event.mem.old_val << "}";
+                break;
+            }
+            return out;
         }
     } // namespace
 
@@ -98,9 +125,7 @@ namespace exasm {
 
         if (is_delay_slot) {
             if (delay_slot_rem == 0) {
-                transaction.emplace_back([&] {
-                    is_delay_slot = false;
-                });
+                transaction.emplace_back([&] { is_delay_slot = false; });
                 pc = branched_pc;
             } else {
                 transaction.emplace_back([&] { --delay_slot_rem; });
@@ -120,7 +145,7 @@ namespace exasm {
         transaction.emplace_back([&] {
             if (enable_exec_history) {
                 record_exec_history(ExecHistory::of_change_pc(
-                                        pc, delay_slot_rem, is_delay_slot));
+                    pc, delay_slot_rem, is_delay_slot, branched_pc));
             }
             pc += 2;
         });
@@ -138,7 +163,10 @@ namespace exasm {
 
         ++clock_count;
 
-        return exec_addr;
+        if (is_delay_slot && delay_slot_rem == 0) {
+            return branched_pc;
+        }
+        return pc;
     }
 
     void Emulator::set_breakpoint(std::uint16_t addr) {
@@ -147,6 +175,7 @@ namespace exasm {
             breakpoints.push_back(addr);
         }
     }
+
     void Emulator::remove_breakpoint(std::uint16_t addr) {
         auto pos = std::find(breakpoints.begin(), breakpoints.end(), addr);
         breakpoints.erase(pos);
@@ -157,6 +186,7 @@ namespace exasm {
             throw std::logic_error("Emulator::reverse_next_clock is available "
                                    "only if exec_history is enabled");
         }
+
         for (;;) {
             if (exec_history.empty()) {
                 throw std::logic_error("Broken exec_history");
@@ -165,17 +195,16 @@ namespace exasm {
             exec_history.pop_back();
             switch (eh.type) {
             case ExecHistoryType::CHANGE_PC:
-                pc = eh.event_info.change_pc.old_pc;
-                is_delay_slot = eh.event_info.change_pc.old_is_delay_slot;
-                delay_slot_rem = eh.event_info.change_pc.old_delay_slot_rem;
+                pc = eh.event.pc.old_pc;
+                is_delay_slot = eh.event.pc.old_is_delay_slot;
+                branched_pc = eh.event.pc.old_branched_pc;
+                delay_slot_rem = eh.event.pc.old_delay_slot_rem + 1;
                 goto end;
             case ExecHistoryType::CHANGE_MEM:
-                mem[eh.event_info.change_mem.addr] =
-                    eh.event_info.change_mem.old_val;
+                mem[eh.event.mem.addr] = eh.event.mem.old_val;
                 break;
             case ExecHistoryType::CHANGE_REG:
-                reg[eh.event_info.change_reg.regnum] =
-                    eh.event_info.change_reg.old_val;
+                reg[eh.event.reg.regnum] = eh.event.reg.old_val;
                 break;
             }
         }
@@ -183,14 +212,7 @@ namespace exasm {
 
         --clock_count;
 
-        // find older pc
-        for (auto itr = exec_history.rbegin(), e = exec_history.rend();
-             itr != e; ++itr) {
-            if ((*itr).type == ExecHistoryType::CHANGE_PC) {
-                return (*itr).event_info.change_pc.old_pc;
-            }
-        }
-        throw std::runtime_error("Couldn't find last executed address");
+        return pc;
     }
 
     int Emulator::get_estimated_clock_count() const { return clock_count + 3; }

@@ -1,9 +1,9 @@
 #include <algorithm>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstring>
 
 #include "asmio.h"
 #include "emulator.h"
@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 
     exasm::Emulator emu;
     emu.set_program(prog.get_executable());
+    emu.set_enable_exec_history(true);
 
     std::ifstream op(argv[2]);
     if (!op) {
@@ -59,7 +60,7 @@ int main(int argc, char **argv) {
             } else if (current_op == "finish") {
                 try {
                     clock();
-                } catch(const exasm::ExecutionError &e) {
+                } catch (const exasm::ExecutionError &e) {
                     if (std::strcmp(e.what(), "Program finished") == 0) {
                         break;
                     }

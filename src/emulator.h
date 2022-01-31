@@ -37,26 +37,29 @@ namespace exasm {
             struct {
                 std::uint16_t old_pc;
                 std::uint16_t old_delay_slot_rem;
+                std::uint16_t old_branched_pc;
                 bool old_is_delay_slot;
-            } change_pc;
+            } pc;
             struct {
                 std::uint16_t addr;
                 std::uint8_t old_val;
-            } change_mem;
+            } mem;
             struct {
                 std::uint8_t regnum;
                 std::uint16_t old_val;
-            } change_reg;
-        } event_info;
+            } reg;
+        } event;
 
         static ExecHistory of_change_pc(std::uint16_t old_pc,
                                         int old_delay_slot_rem,
-                                        bool old_is_delay_slot) {
+                                        bool old_is_delay_slot,
+                                        std::uint16_t old_branched_pc) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_PC;
-            eh.event_info.change_pc.old_pc = old_pc;
-            eh.event_info.change_pc.old_delay_slot_rem = old_delay_slot_rem;
-            eh.event_info.change_pc.old_is_delay_slot = old_is_delay_slot;
+            eh.event.pc.old_pc = old_pc;
+            eh.event.pc.old_delay_slot_rem = old_delay_slot_rem;
+            eh.event.pc.old_branched_pc = old_branched_pc;
+            eh.event.pc.old_is_delay_slot = old_is_delay_slot;
             return eh;
         }
 
@@ -64,8 +67,8 @@ namespace exasm {
                                          std::uint8_t old_val) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_MEM;
-            eh.event_info.change_mem.addr = addr;
-            eh.event_info.change_mem.old_val = old_val;
+            eh.event.mem.addr = addr;
+            eh.event.mem.old_val = old_val;
             return eh;
         }
 
@@ -73,8 +76,8 @@ namespace exasm {
                                          std::uint16_t old_val) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_REG;
-            eh.event_info.change_reg.regnum = regnum;
-            eh.event_info.change_reg.old_val = old_val;
+            eh.event.reg.regnum = regnum;
+            eh.event.reg.old_val = old_val;
             return eh;
         }
     };
@@ -99,7 +102,7 @@ namespace exasm {
 
         void set_pc(std::uint16_t pc) { this->pc = pc; }
 
-        void record_exec_history(ExecHistory &&hist) {
+        void record_exec_history(ExecHistory hist) {
             exec_history.push_back(std::move(hist));
         }
 

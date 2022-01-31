@@ -5,6 +5,6 @@ namespace exasm {
     enum class InstType {
 #include "inst_type_enum.inc"
     };
-}
+} // namespace exasm
 
 #endif

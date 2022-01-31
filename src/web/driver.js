@@ -305,6 +305,7 @@ addEventListener('load', () => {
             Module._free(progdata[0]);
 
             createTraceTable();
+            blinkCurrentLine(0);
 
             showStatus('Ready');
             updateEmulatorStatus();

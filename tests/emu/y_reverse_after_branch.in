@@ -1,0 +1,7 @@
+lui r0, 1
+lli r1, 1
+lli r2, 2
+sw r1, (r0)
+sw r2, (r0)
+beqz r3, -6
+nop

@@ -102,7 +102,7 @@ if meson.can_run_host_binaries()
   ]
   emu_testcases = [
     'y_reg_arith', 'y_imm_arith', 'y_branch', 'y_mem', 'y_break_simple', 'n_unaligned_word_access',
-    'n_unaligned_word_access',
+    'n_unaligned_word_access', 'y_reverse_after_branch'
   ]
 
   if get_option('ex_inst_t').enabled()
