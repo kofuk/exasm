@@ -18,6 +18,15 @@ body {
     background-color: yellow;
 }
 
+.doc-notification {
+    margin: 10px auto;
+    padding: 5px 15px;
+    max-width: 500px;
+    background: lemonchiffon;
+    border: solid 1px bisque;
+    border-radius: 10px;
+}
+
 .container {
     display: flex;
     margin-top: 10px;
