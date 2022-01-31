@@ -3,7 +3,6 @@
 
 #include <array>
 #include <istream>
-#include <list>
 #include <random>
 #include <stdexcept>
 #include <vector>
@@ -94,7 +93,7 @@ namespace exasm {
         std::uint16_t branched_pc;
 
         bool enable_exec_history = false;
-        std::list<ExecHistory> exec_history;
+        std::vector<ExecHistory> exec_history;
 
         int clock_count = 0;
 
