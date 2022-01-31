@@ -27,8 +27,9 @@ lli r1, 0x40 # last word
 sw r2, (r0)
 addi r0, 2
 mov r3, r1
-bnez r3, -8
 sub r3, r0
+bnez r3, -8
+nop
 j -2
 nop</textarea><br/>
           <textarea id="memfile" rows="15" placeholder="Contents of .mem file">
