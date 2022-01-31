@@ -125,12 +125,11 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile,
                                                      std::size_t prog_len) {
     std::istringstream prog_strm(std::string(prog, prog + prog_len));
     exasm::AsmReader reader(prog_strm);
-    std::vector<exasm::Inst> insts;
+    exasm::RawAsm raw_asm;
     bool has_error = false;
     while (!reader.finished()) {
         try {
-            exasm::Inst m = reader.read_next();
-            insts.emplace_back(m);
+            reader.read_next(raw_asm);
         } catch (exasm::ParseError &e) {
             std::cerr << e.what() << '\n';
             has_error = true;
@@ -140,6 +139,8 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile,
     if (has_error) {
         return nullptr;
     }
+
+    std::vector<exasm::Inst> insts = raw_asm.get_executable();
 
     auto *emu = new exasm::Emulator;
     emu->set_enable_exec_history(true);

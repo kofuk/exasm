@@ -297,7 +297,7 @@ namespace exasm {
 
     void Inst::print_bin(std::ostream &out) const {
         switch (inst) {
-            #include "inst_mem_writer.inc"
+#include "inst_mem_writer.inc"
         default:
             asm_error("Illegal instruction");
         }
@@ -316,7 +316,19 @@ namespace exasm {
         return out;
     }
 
-    Inst AsmReader::read_next() {
+    void RawAsm::append(Inst &&inst) {
+        linked = false;
+        insts.push_back(inst);
+    }
+
+    std::vector<Inst> RawAsm::get_executable() {
+        if (!linked) {
+            linked = true;
+        }
+        return insts;
+    }
+
+    void AsmReader::read_next(RawAsm &to) {
         if (!goto_next_instruction()) {
             throw ParseError(
                 "AsmReader::read_next called after last instruction finished.");
@@ -332,11 +344,10 @@ namespace exasm {
 
     void AsmReader::try_recover() { next_line(); }
 
-    std::vector<Inst> AsmReader::read_all() {
-        std::vector<Inst> result;
+    RawAsm AsmReader::read_all() {
+        RawAsm result;
         while (!finished()) {
-            Inst m = read_next();
-            result.emplace_back(m);
+            read_next(result);
         }
         return result;
     }

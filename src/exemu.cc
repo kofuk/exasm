@@ -55,7 +55,8 @@ int main(int argc, char **argv) {
     exasm::AsmReader reader(progin);
     std::vector<exasm::Inst> prog;
     try {
-        prog = reader.read_all();
+        exasm::RawAsm raw_asm = reader.read_all();
+        prog = raw_asm.get_executable();
     } catch (exasm::ParseError &e) {
         std::cout << e.what() << '\n';
         return 1;

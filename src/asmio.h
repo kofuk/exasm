@@ -56,6 +56,15 @@ namespace exasm {
         ParseError(std::string msg) : std::runtime_error(msg) {}
     };
 
+    class RawAsm {
+        std::vector<Inst> insts;
+        bool linked = false;
+
+    public:
+        void append(Inst &&inst);
+        std::vector<Inst> get_executable();
+    };
+
     class AsmReader {
         long linum = 1;
         std::istream &strm;
@@ -75,10 +84,10 @@ namespace exasm {
     public:
         AsmReader(std::istream &strm) : strm(strm) {}
 
-        Inst read_next();
+        void read_next(RawAsm &to);
         void try_recover();
         bool finished();
-        std::vector<Inst> read_all();
+        RawAsm read_all();
     };
 
     std::ostream &write_addr(std::ostream &out, std::uint16_t num);

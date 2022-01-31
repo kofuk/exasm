@@ -20,10 +20,10 @@ int main(int argc, char **argv) {
         return 1;
     }
     exasm::AsmReader reader(in);
-    std::vector<exasm::Inst> prog = reader.read_all();
+    exasm::RawAsm prog = reader.read_all();
 
     exasm::Emulator emu;
-    emu.set_program(std::move(prog));
+    emu.set_program(prog.get_executable());
 
     std::ifstream op(argv[2]);
     if (!op) {

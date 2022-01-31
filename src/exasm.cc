@@ -9,7 +9,8 @@ int main() {
 
     std::uint16_t addr = 0;
     try {
-        for (exasm::Inst &i : reader.read_all()) {
+        exasm::RawAsm raw_asm = reader.read_all();
+        for (exasm::Inst &i : raw_asm.get_executable()) {
             exasm::write_addr(std::cout, addr) << ' ';
             i.print_bin(std::cout);
             std::cout << " // ";

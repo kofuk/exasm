@@ -18,11 +18,11 @@ int main(int argc, char **argv) {
         return 1;
     }
     exasm::AsmReader reader(in);
-
     std::stringstream out;
     std::uint16_t addr = 0;
     try {
-        for (exasm::Inst &i : reader.read_all()) {
+        exasm::RawAsm raw_asm = reader.read_all();
+        for (exasm::Inst &i : raw_asm.get_executable()) {
             exasm::write_addr(out, addr) << ' ';
             i.print_bin(out);
             out << " // ";
