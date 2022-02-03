@@ -95,3 +95,22 @@ textarea {
 .breakpoint-table {
     width: 100%;
 }
+
+.editor-tab-selector input[type=radio] {
+    display: none;
+}
+
+.editor-tab-selector label {
+    padding: 0 20px;
+    margin: 0;
+}
+
+.editor-tab-selector input[type=radio]:checked + label {
+    background-color: darkslategray;
+    color: white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.editor-tab-selector input[type=radio]:not(:checked) + label:hover {
+    background-color: lightgray;
+}

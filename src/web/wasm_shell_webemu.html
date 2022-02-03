@@ -5,6 +5,12 @@
     <title>webemu</title>
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="style.css" />
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs/editor/editor.main.min.css"
+        integrity="sha512-3kaW6VOMaj21NqrAUic4boSfhoP6drJ9bS4csFwvS11HlpL4DyS1QPm0GsAHK2yQGeBFRFi+LVK9uadFIA22Lg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer" />
   </head>
   <body>
     <div class="controll-bar">
@@ -25,40 +31,10 @@
 
     <div class="container">
       <div class="source-pane pane">
-        <form>
-          <textarea id="prog" rows="15" placeholder="Program (Assembly)">
-lli r0, 0x30 # first word
-lli r1, 0x40 # last word
-
-&#35; If you put "@foo" at the beginning of
-&#35; line, you can refer to the position from
-&#35; operands of jump/branch instructions.
-@loop sw r2, (r0)
-addi r0, 2
-mov r3, r1
-sub r3, r0
-&#35; "@loop" is replaced with actual address
-&#35; of "sw" instruction at line 7.
-bnez r3, @loop
-nop
-
-&#35; You can use "@foo" address syntax to
-&#35; jump to any position on the source code.
-@dyn_stop j @dyn_stop
-nop</textarea><br/>
-          <textarea id="memfile" rows="15" placeholder="Contents of .mem file">
-@30 00000001 00000010
-@32 00000011 00000100
-@34 00000101 00000110
-@36 00000111 00001000
-@38 00001001 00001010
-@3a 00001011 00001100
-@3c 00001101 00001110
-@3e 00001111 00010000</textarea><br/>
+        <form class="editor-tab-selector">
+          <input type="radio" id="editor_prog" name="editor-tab" checked /><label for="editor_prog">Program</label><input type="radio" id="editor_mem" name="editor-tab" /><label for="editor_mem">Memory</label>
         </form>
-        <div>
-          <a href="https://github.com/kofuk/exasm">View Source Code on GitHub</a>
-        </div>
+        <div id="prog_editor" style="width: 100%; height: 600px; border: 1px solid grey"></div>
       </div>
       <div class="run-pane pane">
         <div id="status" class="status-bar"></div>
@@ -150,31 +126,47 @@ nop</textarea><br/>
         </table>
       </div>
     </div>
+    <div>
+      <a href="https://github.com/kofuk/exasm">View Source Code on GitHub</a>
+    </div>
 
-    <script>
-     var Module = {
-         preRun: [],
-         postRun: [],
-         print: function(text) {
-             console.log(text);
-         },
-         printErr: function(text) {
-             appendError(text);
-         },
-         setStatus: function(text) {
-             if (text) console.log(text);
-         },
-     };
-    </script>
-    <script src="driver.js"></script>
+      <script>
+       var Module = {
+           preRun: [],
+           postRun: [],
+           print: function(text) {
+               console.log(text);
+           },
+           printErr: function(text) {
+               appendError(text);
+           },
+           setStatus: function(text) {
+               if (text) console.log(text);
+           },
+       };
+
+       var require = {
+           paths: {
+               vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs'
+           },
+           'vs/nls': {
+			   availableLanguages: {
+				   '*': 'ja'
+			   }
+		   }
+       };
+      </script>
     <script
-	    src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
-	    integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
-	    crossorigin="anonymous"></script>
-    <script src="bcralnit.js"></script>
-    <script>
-     $('#prog').bcralnit({width: '35px'});
-    </script>
+        src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs/loader.min.js"
+        integrity="sha512-Ffp6rxgxoBVdIqZjh+sswQIpL3Beu1BhlmisLpAZuO/8ENWpZjmjktp7w4WsaB2fgj2Tq/Sf5plViG2qJpivog=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs/editor/editor.main.min.js"
+        integrity="sha512-WonfuZ3g7wNOB0wnPwdCJkcg4LQB1XwVpbZRBxn++nCdhsTtjGDvzekEUrt76A0Ef6DD0KVc7FfWmqn0dS7vTA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script src="driver.js"></script>
     {{{ SCRIPT }}}
   </body>
 </html>

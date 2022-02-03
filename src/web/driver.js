@@ -1,3 +1,50 @@
+const editorData = {
+    'editor_prog': {
+        model: null,
+        state: null,
+    },
+    'editor_mem': {
+        model: null,
+        state: null,
+    },
+};
+
+const defaultContents = {
+    'editor_prog': [
+        'exasm',
+        `lli r0, 0x30 # first word
+lli r1, 0x40 # last word
+
+# If you put "@foo" at the beginning of
+# line, you can refer to the position from
+# operands of jump/branch instructions.
+@loop sw r2, (r0)
+addi r0, 2
+mov r3, r1
+sub r3, r0
+# "@loop" is replaced with actual address
+# of "sw" instruction at line 7.
+bnez r3, @loop
+nop
+
+# You can use "@foo" address syntax to
+# jump to any position on the source code.
+@dyn_stop j @dyn_stop
+nop`
+    ],
+    'editor_mem': [
+        'memfile',
+        `@30 00000001 00000010
+@32 00000011 00000100
+@34 00000101 00000110
+@36 00000111 00001000
+@38 00001001 00001010
+@3a 00001011 00001100
+@3c 00001101 00001110
+@3e 00001111 00010000`
+    ],
+};
+
 let emulator = 0;
 
 const showError = (text) => {
@@ -281,6 +328,72 @@ const doContinue = () => {
     setTimeout(doContinue);
 };
 
+let editor;
+
+const initEditor = () => {
+    monaco.languages.register({
+        id: 'exasm'
+    });
+    monaco.languages.setMonarchTokensProvider('exasm', {
+        tokenizer: {
+            root: [
+                [/r[0-7]/, 'predefined'],
+                [/[()]/, {open: '(', close: ')', token: 'delimiter.parenthesis'}],
+                [/[a-z][a-z0-9]*/, 'keyword'],
+                [/@[a-zA-Z_][a-zA-Z0-9_]*/, 'identifier'],
+                [/-?0x[0-9a-fA-F]+/, 'number.hex'],
+                [/-?0[0-9a-fA-F]+/, 'number.oct'],
+                [/-?[0-9]+/, 'number'],
+                [/#.*$/, 'comment'],
+                [/ \t,/, 'white'],
+            ],
+        },
+    });
+    monaco.languages.register({
+        id: 'memfile'
+    });
+    monaco.languages.setMonarchTokensProvider('memfile', {
+        tokenizer: {
+            root: [
+                [/^@[0-9a-fA-F]+/, 'number.hex'],
+                [/[01]/, 'number'],
+                [/\/\/.*$/, 'comment'],
+                [/ \t,/, 'white'],
+            ],
+        },
+    });
+
+    let enabledTab = 'editor_prog';
+    for (const tab of Object.keys(editorData)) {
+        if (document.getElementById(tab).checked) {
+            enabledTab = tab;
+        }
+        let content = defaultContents[tab][1];
+        editorData[tab].model = monaco.editor.createModel(content, defaultContents[tab][0])
+    }
+
+    editor = monaco.editor.create(document.getElementById('prog_editor'), {
+        model: editorData[enabledTab].model,
+        minimap: {enabled: false},
+        theme: 'vs-dark',
+    });
+
+    for (const tab of ['editor_prog', 'editor_mem']) {
+        document.getElementById(tab)
+            .addEventListener('change', e => {
+                if (e.target.checked) {
+                    const newTab = e.target.id;
+                    const oldTab = e.target.id === 'editor_prog' ? 'editor_mem' : 'editor_prog';
+                    editorData[oldTab].state = editor.saveViewState();
+                    editorData[oldTab].model = editor.getModel();
+                    editor.setModel(editorData[newTab].model);
+                    editor.restoreViewState(editorData[newTab].state);
+                    editor.focus();
+                }
+            });
+    }
+};
+
 addEventListener('load', () => {
     document.getElementById('prog_init')
         .addEventListener('click', () => {
@@ -294,8 +407,8 @@ addEventListener('load', () => {
 
             showError('');
 
-            const memdata = putStringToHeap(document.getElementById('memfile').value);
-            const progdata = putStringToHeap(document.getElementById('prog').value);
+            const memdata = putStringToHeap(editorData['editor_mem'].model.getValue());
+            const progdata = putStringToHeap(editorData['editor_prog'].model.getValue());
 
             emulator = Module.ccall('init_emulator', 'number',
                                     ['number', 'number', 'number', 'numer'],
@@ -416,11 +529,11 @@ addEventListener('load', () => {
         });
 
     createMemTable();
+    initEditor();
 });
 
 document.body.addEventListener('keydown', e => {
-    if (e.target.nodeName === 'TEXTAREA' ||
-        (e.target.nodeName === 'INPUT' && e.target.type === 'text')) {
+    if (e.target.nodeName === 'INPUT' && e.target.type === 'text') {
         return;
     }
     if (e.key === 'ArrowRight') {
