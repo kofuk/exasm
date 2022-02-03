@@ -66,6 +66,10 @@ if host_machine.system() == 'emscripten'
     '-s', 'NO_DISABLE_EXCEPTION_CATCHING',
   ]
 
+  if get_option('cpp_std') != 'none'
+    emcc_gen_html_flags += '-std=@0@'.format(get_option('cpp_std'))
+  endif
+
   custom_target(
     output : ['index.html', 'index.js', 'index.wasm'],
     input : ['web/wasm_shell_webemu.html', 'webemu.cc'],
@@ -98,7 +102,7 @@ if meson.can_run_host_binaries()
   asm_testcases = [
     'y_reg_arith_simple', 'y_imm_simple', 'y_branch_simple', 'y_mem_simple', 'y_syntax_robustness',
     'n_missing_operand', 'n_operand_comment', 'n_invalid_operand', 'n_invalid_operand_2',
-    'n_invalid_imm',
+    'n_invalid_imm', 'n_label_duplicate', 'y_label_simple', 'y_jump_to_label',
   ]
   emu_testcases = [
     'y_reg_arith', 'y_imm_arith', 'y_branch', 'y_mem', 'y_break_simple', 'n_unaligned_word_access',

@@ -21,7 +21,7 @@ if __name__ == '__main__':
                 .replace('setreg', 'set_register') \
                 .replace('setmem', 'set_memory') \
                 .replace('getmem', 'get_memory') \
-                .replace('imm', 'inst.imm') \
+                .replace('imm', 'std::get<std::uint8_t>(inst.imm)') \
                 .replace('addr', 'reg[inst.rs]')
 
             if 'word_align' in inst and inst['word_align']:
@@ -33,7 +33,7 @@ if __name__ == '__main__':
             if inst['type'] == 'branch':
                 out.write(f'    if ({code}) ''{\n')
                 out.write('        transaction.emplace_back([&] {\n')
-                out.write('            branched_pc = exec_addr + 2 + sign_extend(inst.imm);\n')
+                out.write('            branched_pc = exec_addr + 2 + sign_extend(std::get<std::uint8_t>(inst.imm));\n')
                 out.write('            delay_slot_rem = 1;\n')
                 out.write('            is_delay_slot = true;\n')
                 out.write('        });\n')

@@ -1,5 +1,8 @@
 #include <cctype>
+#include <optional>
+#include <stdexcept>
 #include <string>
+#include <variant>
 
 #include "asmio.h"
 #include "insts.h"
@@ -74,7 +77,7 @@ namespace exasm {
 
 #include "inst_name_to_enum.inc"
 
-        throw ParseError(format_error("Unknown instruction"));
+        throw ParseError(format_error("Unknown instruction: " + inst));
     }
 
     void AsmReader::next_line() {
@@ -287,6 +290,44 @@ namespace exasm {
         return result;
     }
 
+    std::string AsmReader::maybe_read_label() {
+        char c;
+        strm.get(c);
+        if (strm.fail()) {
+            return "";
+        }
+        if (c != '@') {
+            strm.unget();
+            return "";
+        }
+        strm.get(c);
+        if (strm.fail() || c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+            throw ParseError(format_error("Label name expected"));
+        }
+        if (c != '_' && (c < 'a' || 'z' < c) && (c < 'A' || 'Z' < c)) {
+            strm.unget();
+            throw ParseError(
+                format_error("Label name should start with a-z, A-Z or _"));
+        }
+        std::string label_name;
+        label_name.push_back(c);
+
+        for (;;) {
+            strm.get(c);
+            if (strm.fail()) {
+                break;
+            }
+            if (c != '_' && (c < 'a' || 'z' < c) && (c < 'A' || 'Z' < c) &&
+                (c < '0' || '9' < c)) {
+                strm.unget();
+                break;
+            }
+            label_name.push_back(c);
+        }
+
+        return label_name;
+    }
+
     void Inst::print_asm(std::ostream &out) const {
         switch (inst) {
 #include "asm_writer.inc"
@@ -316,16 +357,68 @@ namespace exasm {
         return out;
     }
 
-    void RawAsm::append(Inst &&inst) {
-        linked = false;
+    void RawAsm::append(Inst &&inst, const std::string &label_name) {
+        if (linked) {
+            throw std::logic_error("Appending to linked RawAsm is not allowed");
+        }
+
+        if (!label_name.empty()) {
+            add_label(label_name, current_addr);
+        }
         insts.push_back(inst);
+        current_addr += 2;
     }
 
     std::vector<Inst> RawAsm::get_executable() {
         if (!linked) {
             linked = true;
+
+            std::uint16_t inst_pc = 0;
+            for (Inst &inst : insts) {
+                inst_pc += 2;
+                if (std::holds_alternative<std::string>(inst.imm)) {
+                    std::uint16_t dest =
+                        get_destination(std::get<std::string>(inst.imm));
+                    std::uint8_t addr_diff = static_cast<std::uint8_t>(
+                        static_cast<std::int16_t>(dest) -
+                        static_cast<std::int16_t>(inst_pc));
+                    inst.imm = addr_diff;
+                }
+            }
+
+            label_addr_mapping.clear();
         }
         return insts;
+    }
+
+    std::string RawAsm::add_auto_label(std::int8_t diff_from_pc) {
+        std::uint16_t addr = current_addr + 2 + diff_from_pc;
+
+        for (auto const &[label, label_addr] : label_addr_mapping) {
+            if (addr == label_addr) {
+                return label;
+            }
+        }
+        std::string label("!");
+        label += std::to_string(next_auto_label);
+        ++next_auto_label;
+        add_label(label, addr);
+        return label;
+    }
+
+    std::uint16_t RawAsm::get_destination(const std::string &label_name) {
+        auto pos = label_addr_mapping.find(label_name);
+        if (pos == label_addr_mapping.end()) {
+            throw LinkError("Undefined label: " + label_name);
+        }
+        return pos->second;
+    }
+
+    void RawAsm::add_label(const std::string &label_name, std::uint16_t addr) {
+        if (label_addr_mapping.find(label_name) != label_addr_mapping.end()) {
+            throw LinkError("Duplicate label: " + label_name);
+        }
+        label_addr_mapping[label_name] = addr;
     }
 
     void AsmReader::read_next(RawAsm &to) {
@@ -333,6 +426,9 @@ namespace exasm {
             throw ParseError(
                 "AsmReader::read_next called after last instruction finished.");
         }
+
+        std::string label = maybe_read_label();
+        skip_space();
 
         InstType ty = read_inst_type();
         switch (ty) {

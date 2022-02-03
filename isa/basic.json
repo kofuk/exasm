@@ -126,7 +126,7 @@
     {
         "name": "beqz",
         "type": "branch",
-        "args": ["rd", "imm"],
+        "args": ["rd", "baddr"],
         "opcode": "0000",
         "signed_imm": true,
         "action": "reg[rd] == uword(0)"
@@ -134,7 +134,7 @@
     {
         "name": "bnez",
         "type": "branch",
-        "args": ["rd", "imm"],
+        "args": ["rd", "baddr"],
         "opcode": "0001",
         "signed_imm": true,
         "action": "reg[rd] != uword(0)"
@@ -142,7 +142,7 @@
     {
         "name": "bmi",
         "type": "branch",
-        "args": ["rd", "imm"],
+        "args": ["rd", "baddr"],
         "opcode": "0010",
         "signed_imm": true,
         "action": "sword(reg[rd]) < 0"
@@ -150,7 +150,7 @@
     {
         "name": "bpl",
         "type": "branch",
-        "args": ["rd", "imm"],
+        "args": ["rd", "baddr"],
         "opcode": "0011",
         "signed_imm": true,
         "action": "sword(reg[rd]) >= 0"
@@ -158,7 +158,7 @@
     {
         "name": "j",
         "type": "branch",
-        "args": ["imm"],
+        "args": ["baddr"],
         "opcode": "1000",
         "signed_imm": true,
         "action": "true"

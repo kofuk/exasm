@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace exasm {
@@ -13,7 +15,7 @@ namespace exasm {
         InstType inst;
         std::uint8_t rd;
         std::uint8_t rs;
-        std::uint8_t imm;
+        std::variant<std::uint8_t, std::string> imm;
 
         static Inst new_with_type(InstType inst) {
             Inst result;
@@ -39,10 +41,19 @@ namespace exasm {
             return result;
         }
 
-        static Inst new_with_imm(InstType inst, std::uint8_t imm) {
+        static Inst new_with_reg_label(InstType inst, std::uint8_t rd,
+                                     std::string label_name) {
             Inst result;
             result.inst = inst;
-            result.imm = imm;
+            result.rd = rd;
+            result.imm = label_name;
+            return result;
+        }
+
+        static Inst new_with_label(InstType inst, std::string label_name) {
+            Inst result;
+            result.inst = inst;
+            result.imm = label_name;
             return result;
         }
 
@@ -56,13 +67,25 @@ namespace exasm {
         ParseError(std::string msg) : std::runtime_error(msg) {}
     };
 
+    class LinkError : public std::runtime_error {
+    public:
+        LinkError(std::string msg) : std::runtime_error(msg) {}
+    };
+
     class RawAsm {
         std::vector<Inst> insts;
         bool linked = false;
+        std::uint16_t current_addr = 0;
+        std::unordered_map<std::string, std::uint16_t> label_addr_mapping;
+        int next_auto_label = 0;
+
+        std::uint16_t get_destination(const std::string &label_name);
+        void add_label(const std::string &label_name, std::uint16_t addr);
 
     public:
-        void append(Inst &&inst);
+        void append(Inst &&inst, const std::string &label_name);
         std::vector<Inst> get_executable();
+        std::string add_auto_label(std::int8_t addr_diff);
     };
 
     class AsmReader {
@@ -80,6 +103,7 @@ namespace exasm {
         std::uint8_t read_reg(std::string king);
         void must_read(char c, std::string context);
         std::uint8_t read_immediate(bool allow_sign);
+        std::string maybe_read_label();
 
     public:
         AsmReader(std::istream &strm) : strm(strm) {}

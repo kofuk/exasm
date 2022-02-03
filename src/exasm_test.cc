@@ -30,7 +30,10 @@ int main(int argc, char **argv) {
             out << '\n';
             addr += 2;
         }
-    } catch (exasm::ParseError &e) {
+    } catch (const exasm::ParseError &e) {
+        std::cerr << e.what() << '\n';
+        return 1;
+    } catch (const exasm::LinkError &e) {
         std::cerr << e.what() << '\n';
         return 1;
     }

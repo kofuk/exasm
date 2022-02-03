@@ -57,7 +57,10 @@ int main(int argc, char **argv) {
     try {
         exasm::RawAsm raw_asm = reader.read_all();
         prog = raw_asm.get_executable();
-    } catch (exasm::ParseError &e) {
+    } catch (const exasm::ParseError &e) {
+        std::cout << e.what() << '\n';
+        return 1;
+    } catch (const exasm::LinkError &e) {
         std::cout << e.what() << '\n';
         return 1;
     }

@@ -130,10 +130,14 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile,
     while (!reader.finished()) {
         try {
             reader.read_next(raw_asm);
-        } catch (exasm::ParseError &e) {
+        } catch (const exasm::ParseError &e) {
             std::cerr << e.what() << '\n';
             has_error = true;
             reader.try_recover();
+        } catch (const exasm::LinkError &e) {
+            std::cerr << e.what() << '\n';
+            has_error = true;
+            return nullptr;
         }
     }
     if (has_error) {

@@ -29,13 +29,22 @@
           <textarea id="prog" rows="15" placeholder="Program (Assembly)">
 lli r0, 0x30 # first word
 lli r1, 0x40 # last word
-sw r2, (r0)
+
+&#35; If you put "@foo" at the beginning of
+&#35; line, you can refer to the position from
+&#35; operands of jump/branch instructions.
+@loop sw r2, (r0)
 addi r0, 2
 mov r3, r1
 sub r3, r0
-bnez r3, -10
+&#35; "@loop" is replaced with actual address
+&#35; of "sw" instruction at line 7.
+bnez r3, @loop
 nop
-j -2
+
+&#35; You can use "@foo" address syntax to
+&#35; jump to any position on the source code.
+@dyn_stop j @dyn_stop
 nop</textarea><br/>
           <textarea id="memfile" rows="15" placeholder="Contents of .mem file">
 @30 00000001 00000010

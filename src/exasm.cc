@@ -18,7 +18,9 @@ int main() {
             std::cout << '\n';
             addr += 2;
         }
-    } catch (exasm::ParseError &e) {
+    } catch (const exasm::ParseError &e) {
+        std::cerr << e.what() << '\n';
+    } catch (const exasm::LinkError &e) {
         std::cerr << e.what() << '\n';
     }
 }
