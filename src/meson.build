@@ -35,12 +35,17 @@ asm_writer_inc = custom_target(
   input : ['generate_asm_writer.py', insts],
   command : [python, '@INPUT@', '@OUTPUT@']
 )
+inst_traits_inc = custom_target(
+  output : ['inst_traits.inc'],
+  input : ['generate_inst_traits.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
 
 asmio_lib = static_library(
   'asmio', 'asmio.cc',
   inst_type_enum_inc, inst_name_to_enum_inc,
   asm_parser_inc, inst_mem_writer_inc,
-  asm_writer_inc,
+  asm_writer_inc, inst_traits_inc,
 )
 emulator_lib = static_library(
   'emulator', 'emulator.cc',
@@ -101,7 +106,10 @@ if meson.can_run_host_binaries()
   asm_testcases = [
     'y_reg_arith_simple', 'y_imm_simple', 'y_branch_simple', 'y_mem_simple', 'y_syntax_robustness',
     'n_missing_operand', 'n_operand_comment', 'n_invalid_operand', 'n_invalid_operand_2',
-    'n_invalid_imm', 'n_label_duplicate', 'y_label_simple', 'y_jump_to_label',
+    'n_invalid_imm', 'n_label_duplicate', 'y_label_simple', 'y_jump_to_label', 'y_long_jump_forward',
+    'y_long_jump_forward_2', 'y_long_jump_forward_3', 'y_long_jump_forward_4',
+    'y_long_jump_backward', 'y_long_jump_backward_2', 'y_long_jump_backward_3',
+    'y_long_jump_backward_4'
   ]
   emu_testcases = [
     'y_reg_arith', 'y_imm_arith', 'y_branch', 'y_mem', 'y_break_simple', 'n_unaligned_word_access',

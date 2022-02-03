@@ -1,0 +1,67 @@
+@beg nop
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+j 2
+lui r0, 1
+nop
+j @beg
+nop

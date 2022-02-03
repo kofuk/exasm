@@ -144,7 +144,13 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile,
         return nullptr;
     }
 
-    std::vector<exasm::Inst> insts = raw_asm.get_executable();
+    std::vector<exasm::Inst> insts;
+    try {
+        insts = raw_asm.get_executable();
+    } catch (const exasm::LinkError &e) {
+        std::cerr << e.what() << '\n';
+        return nullptr;
+    }
 
     auto *emu = new exasm::Emulator;
     emu->set_enable_exec_history(true);

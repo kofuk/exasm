@@ -42,7 +42,7 @@ namespace exasm {
         }
 
         static Inst new_with_reg_label(InstType inst, std::uint8_t rd,
-                                     std::string label_name) {
+                                       std::string label_name) {
             Inst result;
             result.inst = inst;
             result.rd = rd;
@@ -81,11 +81,14 @@ namespace exasm {
 
         std::uint16_t get_destination(const std::string &label_name);
         void add_label(const std::string &label_name, std::uint16_t addr);
+        void handle_long_jump();
+        void insert_inst_at_addr(Inst inst, std::uint16_t addr);
 
     public:
         void append(Inst &&inst, const std::string &label_name);
         std::vector<Inst> get_executable();
         std::string add_auto_label(std::int8_t addr_diff);
+        std::string add_auto_label_at_addr(std::uint16_t addr);
     };
 
     class AsmReader {

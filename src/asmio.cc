@@ -346,7 +346,12 @@ namespace exasm {
 
     std::ostream &write_addr(std::ostream &out, std::uint16_t num) {
         out << "@";
-        for (int i = 1; i >= 0; --i) {
+        int beg = 1;
+        if (num >= 0xFFF)
+            beg = 3;
+        else if (num >= 0xFF)
+            beg = 2;
+        for (int i = beg; i >= 0; --i) {
             int hd = (num >> (4 * i)) & 0xF;
             if (hd < 10) {
                 out << static_cast<char>(hd + '0');
@@ -369,9 +374,97 @@ namespace exasm {
         current_addr += 2;
     }
 
+    void RawAsm::insert_inst_at_addr(Inst inst, std::uint16_t addr) {
+        for (auto itr = label_addr_mapping.begin(),
+                  e = label_addr_mapping.end();
+             itr != e; ++itr) {
+            if (itr->second >= addr) {
+                itr->second += 2;
+            }
+        }
+        insts.insert(insts.begin() + static_cast<std::size_t>(addr) / 2,
+                     std::move(inst));
+    }
+
+#include "inst_traits.inc"
+
+    void RawAsm::handle_long_jump() {
+        bool has_edit = true;
+        while (has_edit) {
+            has_edit = false;
+            for (std::size_t i = 0; i < insts.size(); ++i) {
+                if (!is_inst_branch(insts[i].inst)) {
+                    continue;
+                }
+                std::string orig_label = std::get<std::string>(insts[i].imm);
+                std::uint16_t from = static_cast<std::uint16_t>(i) * 2 + 2;
+                std::uint16_t to = get_destination(orig_label);
+                int distance = static_cast<int>(to) - static_cast<int>(from);
+
+                if (distance < 0) {
+                    while (static_cast<int>(from) - static_cast<int>(to) >
+                           128) {
+                        has_edit = true;
+                        std::uint16_t insert_addr = from - 124;
+                        if (is_inst_branch(
+                                insts[(insert_addr >> 1) - 1].inst)) {
+                            insert_addr += 2;
+                        }
+
+                        std::string orig_route =
+                            add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                                            insert_addr);
+                        insert_inst_at_addr(
+                            Inst::new_with_label(InstType::J, orig_label),
+                            insert_addr);
+                        std::string step_label =
+                            add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                                            insert_addr);
+                        insert_inst_at_addr(
+                            Inst::new_with_label(InstType::J, orig_route),
+                            insert_addr);
+
+                        insts[(from >> 1) + 3].imm = step_label;
+                        from = insert_addr + 6;
+                    }
+                } else if (0 <= distance) {
+                    while (static_cast<int>(to) - static_cast<int>(from) >
+                           127) {
+                        has_edit = true;
+                        std::uint16_t insert_addr = from + 120;
+                        if (is_inst_branch(
+                                insts[(insert_addr >> 1) - 1].inst)) {
+                            insert_addr += 2;
+                        }
+
+                        std::string orig_route =
+                            add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                                            insert_addr);
+                        insert_inst_at_addr(
+                            Inst::new_with_label(InstType::J, orig_label),
+                            insert_addr);
+                        std::string step_label =
+                            add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                                            insert_addr);
+                        insert_inst_at_addr(
+                            Inst::new_with_label(InstType::J, orig_route),
+                            insert_addr);
+
+                        insts[(from >> 1) - 1].imm = step_label;
+                        from = insert_addr + 6;
+                    }
+                }
+            }
+        }
+    }
+
     std::vector<Inst> RawAsm::get_executable() {
         if (!linked) {
-            linked = true;
+            handle_long_jump();
 
             std::uint16_t inst_pc = 0;
             for (Inst &inst : insts) {
@@ -385,15 +478,18 @@ namespace exasm {
                     inst.imm = addr_diff;
                 }
             }
-
             label_addr_mapping.clear();
+            linked = true;
         }
         return insts;
     }
 
     std::string RawAsm::add_auto_label(std::int8_t diff_from_pc) {
         std::uint16_t addr = current_addr + 2 + diff_from_pc;
+        return add_auto_label_at_addr(addr);
+    }
 
+    std::string RawAsm::add_auto_label_at_addr(std::uint16_t addr) {
         for (auto const &[label, label_addr] : label_addr_mapping) {
             if (addr == label_addr) {
                 return label;
