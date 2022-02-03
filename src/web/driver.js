@@ -55,10 +55,6 @@ const appendError = (text) => {
     document.getElementById('err').innerText += text + '\n';
 };
 
-const showStatus = (text) => {
-    document.getElementById('status').innerText = text;
-};
-
 const updateEmulatorStatus = () => {
     if (emulator === 0) {
         return;
@@ -432,7 +428,6 @@ addEventListener('load', () => {
             createTraceTable();
             blinkCurrentLine(0);
 
-            showStatus('Ready');
             updateEmulatorStatus();
         });
     document.getElementById('set_range')

@@ -52,10 +52,6 @@ textarea {
     flex: 2;
 }
 
-.status-bar {
-    background: lightgreen;
-}
-
 .tip {
     color: gray;
     font-size: 12px;
