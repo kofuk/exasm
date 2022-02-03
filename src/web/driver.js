@@ -369,6 +369,11 @@ const initEditor = () => {
             enabledTab = tab;
         }
         let content = defaultContents[tab][1];
+        const oldContent = localStorage.getItem(tab);
+        if (oldContent !== null) {
+            content = oldContent;
+        }
+
         editorData[tab].model = monaco.editor.createModel(content, defaultContents[tab][0])
     }
 
@@ -389,6 +394,8 @@ const initEditor = () => {
                     editor.setModel(editorData[newTab].model);
                     editor.restoreViewState(editorData[newTab].state);
                     editor.focus();
+
+                    localStorage.setItem(oldTab, editorData[oldTab].model.getValue());
                 }
             });
     }
@@ -399,6 +406,10 @@ addEventListener('load', () => {
         .addEventListener('click', () => {
             states.continueInterrupted = true;
             states.breaked = false;
+
+            localStorage.setItem('editor_prog', editorData['editor_prog'].model.getValue());
+            localStorage.setItem('editor_mem', editorData['editor_mem'].model.getValue());
+
 
             if (emulator !== 0) {
                 Module.ccall('destroy_emulator', 'number', ['number'], [emulator])
