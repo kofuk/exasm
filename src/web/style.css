@@ -114,3 +114,9 @@ textarea {
 .editor-tab-selector input[type=radio]:not(:checked) + label:hover {
     background-color: lightgray;
 }
+
+.prog-editor {
+    width: 100%;
+    height: 600px;
+    border: 1px solid grey;
+}

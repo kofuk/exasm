@@ -381,6 +381,7 @@ const initEditor = () => {
         model: editorData[enabledTab].model,
         minimap: {enabled: false},
         theme: 'vs-dark',
+        automaticLayout: true,
     });
 
     for (const tab of ['editor_prog', 'editor_mem']) {
