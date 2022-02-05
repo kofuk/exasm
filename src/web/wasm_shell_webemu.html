@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>webemu</title>
+    <title>WebEmu - Browser-based Processor Emulator &amp; Debugger</title>
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="style.css" />
     <link
@@ -11,21 +11,42 @@
         integrity="sha512-3kaW6VOMaj21NqrAUic4boSfhoP6drJ9bS4csFwvS11HlpL4DyS1QPm0GsAHK2yQGeBFRFi+LVK9uadFIA22Lg=="
         crossorigin="anonymous"
         referrerpolicy="no-referrer" />
+    <link
+        href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        rel="stylesheet">
   </head>
   <body>
     <div class="controll-bar">
-      <input type="button" value="Load Memory and Program" id="prog_init" />
-      Memory: <input type="text" size="3" id="mem_start" value="0x34" />--<input type="text" size="3" id="mem_end" value="0x40" /><input type="button" value="Set Range" id="set_range" />
-      <input type="button" value="Reverse Next (←)" id="reverse_clock" />
-      <input type="button" value="Next Clock (→)" id="clock" />
-      <input type="button" value="Continue" id="continue" />
-      <input type="button" value="Copy Assembled Program" id="copy_prog_mem" />
-      <input type="button" value="Download Memory as C Source Code" id="download_mem_c" />
+      <button type="button" id="prog_init" title="Load program and initialize emulator">
+        <span class="material-icons">play_arrow</span><br/>
+        Load
+      </button>
+      <button type="button" id="reverse_clock" title="Undo clock cycle (←)">
+        <span class="material-icons">undo</span><br/>
+        Reverse Next
+      </button>
+      <button type="button" title="Next Clock (→)" id="clock">
+        <span class="material-icons">skip_next</span><br/>
+        Next Clock
+      </button>
+      <button type="button" value="Continue" id="continue">
+        <span class="material-icons">rotate_right</span><br/>
+        Continue
+      </button>
+      <button type="button" id="copy_prog_mem" title="Copy mem file of the loaded program to clipboard">
+        <span class="material-icons">content_copy</span><br/>
+        Copy Executable
+      </button>
+      <button type="button" id="download_mem_c" title="Download whole program memory as C source code">
+        <span class="material-icons">file_download</span><br/>
+        Download Memory
+      </button>
       <div class="error-bar" id="err"></div>
     </div>
 
     <div class="doc-notification">
-      Documentation available (Japanese).
+      <span id="close_notification">✕</span>
+      Documentation available. (Japanese)
       <a href="https://www.kofuk.org/blog/20220131-emulator/">Visit</a>
     </div>
 
@@ -46,8 +67,8 @@
         </div>
 
         <div>
-          Register:
-          <table border="1">
+          Register
+          <table>
             <thead>
               <tr>
                 <th>r0</th>
@@ -77,8 +98,9 @@
         </div>
 
         <div>
-          Memory:
-          <table border="1">
+          Memory <input type="text" size="3" id="mem_start" value="0x34" class="outlined" /><input type="text" size="3" id="mem_end" value="0x40" class="outlined" /><input type="button" value="Set Range" id="set_range" />
+
+          <table>
             <thead>
               <tr>
                 <th></th>
@@ -99,11 +121,10 @@
         </div>
 
         <div>
-          Trace:
-          <table border="1" class="trace-table">
+          Trace
+          <table class="trace-table">
             <thead>
               <tr>
-                <th>Break</th>
                 <th>Instruction</th>
               </tr>
             </thead>
@@ -112,11 +133,10 @@
         </div>
       </div>
       <div class="breakpoint-pane pane">
-        Breakpoints:
-        <table border="1" class="breakpoint-table">
+        Breakpoints
+        <table class="breakpoint-table">
             <thead>
               <tr>
-                <th></th>
                 <th>Condition</th>
               </tr>
             </thead>
@@ -148,10 +168,10 @@
                vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.31.1/min/vs'
            },
            'vs/nls': {
-			   availableLanguages: {
-				   '*': 'ja'
-			   }
-		   }
+               availableLanguages: {
+                   '*': 'ja'
+               }
+           }
        };
       </script>
     <script

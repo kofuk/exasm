@@ -168,10 +168,11 @@ const createTraceTable = () => {
             if (e.length === 0) return;
             const tr = document.createElement('tr');
             tr.id = 'prog' + addr;
-            const td1 = document.createElement('td');
+            const td = document.createElement('td');
             const checkBox = document.createElement('input');
             checkBox.type = 'checkbox';
             checkBox.id = 'break' + addr;
+            checkBox.classList.add('breakpoint');
             checkBox.addEventListener('change', e => {
                 const addr = parseInt(e.target.id.replace('break', ''));
                 if (isNaN(addr)) {
@@ -190,11 +191,14 @@ const createTraceTable = () => {
                                  [emulator, addr]);
                 }
             });
-            td1.appendChild(checkBox);
-            tr.appendChild(td1);
-            const td2 = document.createElement('td');
-            td2.innerText = e;
-            tr.appendChild(td2);
+            td.appendChild(checkBox);
+            const label = document.createElement('label');
+            label.setAttribute('for', 'break' + addr);
+            td.appendChild(label);
+            const inst = document.createElement('span');
+            inst.innerText = e;
+            td.appendChild(inst);
+            tr.appendChild(td);
             traceBody.appendChild(tr);
             addr += 2;
         });
@@ -228,31 +232,38 @@ const states = new Proxy(
         set: (obj, prop, value) => {
             if (prop in obj) {
                 if (prop === 'continueInterrupted') {
-                    document.getElementById('continue').value = value ? 'Continue' : 'Interrupt';
+                    if (value) {
+                        document.getElementById('continue').innerHTML = '<span class="material-icons">' +
+                            'rotate_right</span><br>Continue';
+                    } else {
+                        document.getElementById('continue').innerHTML = '<span class="material-icons">' +
+                            'stop</span><br>Interrupt';
+                    }
                 } else if (prop === 'breaked') {
-                    document.getElementById('clock').value = value ? 'Next clock' : 'Next clock (→)';
+                    document.getElementById('clock').title = value ? 'Next Clock' : 'Next Clock (→)';
                 } else if (prop == 'breakpoints') {
                     const table = document.getElementById('breakpoint_table_body');
                     table.innerHTML = '';
                     value.forEach(e => {
                         const tr = document.createElement('tr');
-                        const controllTd = document.createElement('td');
-                        const deleteButton = document.createElement('input');
-                        deleteButton.type = 'button';
-                        deleteButton.value = '×';
+                        const td = document.createElement('td');
+
+                        const deleteButton = document.createElement('span');
+                        deleteButton.innerText = 'delete_outline';
                         deleteButton.addEventListener('click', () => {
                             if (typeof e.pc !== 'undefined') {
                                 document.getElementById('break' + e.pc).click();
                             }
                         });
-                        controllTd.appendChild(deleteButton);
-                        tr.appendChild(controllTd);
+                        deleteButton.classList.add('material-icons', 'button', 'delete');
+                        td.appendChild(deleteButton);
+                        tr.appendChild(td);
 
-                        const conditionTd = document.createElement('td');
+                        const condition = document.createElement('span');
                         if (typeof e.pc !== 'undefined') {
-                            conditionTd.innerText = `Fetch 0x${e.pc.toString(16)}`;
+                            condition.innerText = `Fetch 0x${e.pc.toString(16)}`;
                         }
-                        tr.appendChild(conditionTd);
+                        td.appendChild(condition);
 
                         table.appendChild(tr);
                     });
@@ -407,28 +418,29 @@ addEventListener('load', () => {
             localStorage.setItem('editor_prog', editorData['editor_prog'].model.getValue());
             localStorage.setItem('editor_mem', editorData['editor_mem'].model.getValue());
 
+            setTimeout(() => {
+                if (emulator !== 0) {
+                    Module.ccall('destroy_emulator', 'number', ['number'], [emulator])
+                    emulator = 0;
+                }
 
-            if (emulator !== 0) {
-                Module.ccall('destroy_emulator', 'number', ['number'], [emulator])
-                emulator = 0;
-            }
+                showError('');
 
-            showError('');
+                const memdata = putStringToHeap(editorData['editor_mem'].model.getValue());
+                const progdata = putStringToHeap(editorData['editor_prog'].model.getValue());
 
-            const memdata = putStringToHeap(editorData['editor_mem'].model.getValue());
-            const progdata = putStringToHeap(editorData['editor_prog'].model.getValue());
+                emulator = Module.ccall('init_emulator', 'number',
+                                        ['number', 'number', 'number', 'numer'],
+                                        [memdata[0], memdata[1], progdata[0], progdata[1]]);
 
-            emulator = Module.ccall('init_emulator', 'number',
-                                    ['number', 'number', 'number', 'numer'],
-                                    [memdata[0], memdata[1], progdata[0], progdata[1]]);
+                Module._free(memdata[0]);
+                Module._free(progdata[0]);
 
-            Module._free(memdata[0]);
-            Module._free(progdata[0]);
+                createTraceTable();
+                blinkCurrentLine(0);
 
-            createTraceTable();
-            blinkCurrentLine(0);
-
-            updateEmulatorStatus();
+                updateEmulatorStatus();
+            });
         });
     document.getElementById('set_range')
         .addEventListener('click', () => {
@@ -533,6 +545,14 @@ addEventListener('load', () => {
                          [emulator, dataTmp, memEnd - memStart, memStart]);
             Module._free(dataTmp);
             updateEmulatorStatus();
+        });
+
+    document.getElementById('close_notification')
+        .addEventListener('click', e => {
+            e.target.parentNode.animate([{opacity: 1}, {opacity: 0}], 300)
+                .addEventListener('finish', () => {
+                    e.target.parentNode.remove();
+                });
         });
 
     createMemTable();
