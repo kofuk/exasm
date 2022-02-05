@@ -20,8 +20,7 @@ namespace {
 } // namespace
 
 extern "C" {
-__attribute__((used)) std::uint16_t get_register_value(EmulatorWrapper *ew,
-                                                       int number) {
+__attribute__((used)) std::uint16_t get_register_value(EmulatorWrapper *ew, int number) {
     if (number < 0 || 7 < number) {
         return 0;
     }
@@ -54,17 +53,15 @@ __attribute__((used)) std::uint16_t next_clock(EmulatorWrapper *ew) {
     return 0;
 }
 
-__attribute__((used)) void set_register_value(EmulatorWrapper *ew, int number,
-                                              std::uint16_t val) {
+__attribute__((used)) void set_register_value(EmulatorWrapper *ew, int number, std::uint16_t val) {
     if (number < 0 || 7 < number) {
         return;
     }
     ew->emu->set_register(number, val);
 }
 
-__attribute__((used)) void set_mem_value(EmulatorWrapper *ew,
-                                         std::uint8_t *new_val, std::uint16_t n,
-                                         std::uint16_t base_addr) {
+__attribute__((used)) void set_mem_value(EmulatorWrapper *ew, std::uint8_t *new_val,
+                                         std::uint16_t n, std::uint16_t base_addr) {
     for (int i = 0; i < n; ++i) {
         if (ew->emu->get_memory()[base_addr + i] != new_val[i]) {
             ew->emu->set_memory(base_addr + i, new_val[i]);
@@ -94,13 +91,11 @@ __attribute__((used)) char *dump_program(EmulatorWrapper *ew) {
     return cstr;
 }
 
-__attribute__((used)) void set_breakpoint(EmulatorWrapper *ew,
-                                          std::uint16_t addr) {
+__attribute__((used)) void set_breakpoint(EmulatorWrapper *ew, std::uint16_t addr) {
     ew->emu->set_breakpoint(addr);
 }
 
-__attribute__((used)) void remove_breakpoint(EmulatorWrapper *ew,
-                                             std::uint16_t addr) {
+__attribute__((used)) void remove_breakpoint(EmulatorWrapper *ew, std::uint16_t addr) {
     ew->emu->remove_breakpoint(addr);
 }
 
@@ -119,10 +114,8 @@ __attribute__((used)) int reverse_next_clock(EmulatorWrapper *ew) {
     }
 }
 
-__attribute__((used)) EmulatorWrapper *init_emulator(char *memfile,
-                                                     std::size_t memfile_len,
-                                                     char *prog,
-                                                     std::size_t prog_len) {
+__attribute__((used)) EmulatorWrapper *init_emulator(char *memfile, std::size_t memfile_len,
+                                                     char *prog, std::size_t prog_len) {
     std::istringstream prog_strm(std::string(prog, prog + prog_len));
     exasm::AsmReader reader(prog_strm);
     exasm::RawAsm raw_asm;

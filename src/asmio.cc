@@ -18,8 +18,7 @@ namespace exasm {
             std::exit(1);
         }
 
-        std::ostream &write_hex(std::ostream &out, std::uint8_t num,
-                                bool use_sign) {
+        std::ostream &write_hex(std::ostream &out, std::uint8_t num, bool use_sign) {
             if (use_sign && (num >> 7) != 0) {
                 out << '-';
                 num = ~num + 1;
@@ -197,8 +196,7 @@ namespace exasm {
         }
         strm.get(c);
         if (strm.fail()) {
-            throw ParseError(
-                format_error("Register number expected, but got EOF"));
+            throw ParseError(format_error("Register number expected, but got EOF"));
         }
         if ('0' <= c && c <= '9') {
             std::uint8_t reg_num = c - '0';
@@ -306,8 +304,7 @@ namespace exasm {
         }
         if (c != '_' && (c < 'a' || 'z' < c) && (c < 'A' || 'Z' < c)) {
             strm.unget();
-            throw ParseError(
-                format_error("Label name should start with a-z, A-Z or _"));
+            throw ParseError(format_error("Label name should start with a-z, A-Z or _"));
         }
         std::string label_name;
         label_name.push_back(c);
@@ -317,8 +314,7 @@ namespace exasm {
             if (strm.fail()) {
                 break;
             }
-            if (c != '_' && (c < 'a' || 'z' < c) && (c < 'A' || 'Z' < c) &&
-                (c < '0' || '9' < c)) {
+            if (c != '_' && (c < 'a' || 'z' < c) && (c < 'A' || 'Z' < c) && (c < '0' || '9' < c)) {
                 strm.unget();
                 break;
             }
@@ -375,15 +371,12 @@ namespace exasm {
     }
 
     void RawAsm::insert_inst_at_addr(Inst inst, std::uint16_t addr) {
-        for (auto itr = label_addr_mapping.begin(),
-                  e = label_addr_mapping.end();
-             itr != e; ++itr) {
+        for (auto itr = label_addr_mapping.begin(), e = label_addr_mapping.end(); itr != e; ++itr) {
             if (itr->second >= addr) {
                 itr->second += 2;
             }
         }
-        insts.insert(insts.begin() + static_cast<std::size_t>(addr) / 2,
-                     std::move(inst));
+        insts.insert(insts.begin() + static_cast<std::size_t>(addr) / 2, std::move(inst));
     }
 
 #include "inst_traits.inc"
@@ -402,57 +395,41 @@ namespace exasm {
                 int distance = static_cast<int>(to) - static_cast<int>(from);
 
                 if (distance < 0) {
-                    while (static_cast<int>(from) - static_cast<int>(to) >
-                           128) {
+                    while (static_cast<int>(from) - static_cast<int>(to) > 128) {
                         has_edit = true;
                         std::uint16_t insert_addr = from - 124;
-                        if (is_inst_branch(
-                                insts[(insert_addr >> 1) - 1].inst)) {
+                        if (is_inst_branch(insts[(insert_addr >> 1) - 1].inst)) {
                             insert_addr += 2;
                         }
 
-                        std::string orig_route =
-                            add_auto_label_at_addr(insert_addr);
-                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                        std::string orig_route = add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP), insert_addr);
+                        insert_inst_at_addr(Inst::new_with_label(InstType::J, orig_label),
                                             insert_addr);
-                        insert_inst_at_addr(
-                            Inst::new_with_label(InstType::J, orig_label),
-                            insert_addr);
-                        std::string step_label =
-                            add_auto_label_at_addr(insert_addr);
-                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                        std::string step_label = add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP), insert_addr);
+                        insert_inst_at_addr(Inst::new_with_label(InstType::J, orig_route),
                                             insert_addr);
-                        insert_inst_at_addr(
-                            Inst::new_with_label(InstType::J, orig_route),
-                            insert_addr);
 
                         insts[(from >> 1) + 3].imm = step_label;
                         from = insert_addr + 6;
                     }
                 } else if (0 <= distance) {
-                    while (static_cast<int>(to) - static_cast<int>(from) >
-                           127) {
+                    while (static_cast<int>(to) - static_cast<int>(from) > 127) {
                         has_edit = true;
                         std::uint16_t insert_addr = from + 120;
-                        if (is_inst_branch(
-                                insts[(insert_addr >> 1) - 1].inst)) {
+                        if (is_inst_branch(insts[(insert_addr >> 1) - 1].inst)) {
                             insert_addr += 2;
                         }
 
-                        std::string orig_route =
-                            add_auto_label_at_addr(insert_addr);
-                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                        std::string orig_route = add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP), insert_addr);
+                        insert_inst_at_addr(Inst::new_with_label(InstType::J, orig_label),
                                             insert_addr);
-                        insert_inst_at_addr(
-                            Inst::new_with_label(InstType::J, orig_label),
-                            insert_addr);
-                        std::string step_label =
-                            add_auto_label_at_addr(insert_addr);
-                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                        std::string step_label = add_auto_label_at_addr(insert_addr);
+                        insert_inst_at_addr(Inst::new_with_type(InstType::NOP), insert_addr);
+                        insert_inst_at_addr(Inst::new_with_label(InstType::J, orig_route),
                                             insert_addr);
-                        insert_inst_at_addr(
-                            Inst::new_with_label(InstType::J, orig_route),
-                            insert_addr);
 
                         insts[(from >> 1) - 1].imm = step_label;
                         from = insert_addr + 6;
@@ -470,11 +447,9 @@ namespace exasm {
             for (Inst &inst : insts) {
                 inst_pc += 2;
                 if (std::holds_alternative<std::string>(inst.imm)) {
-                    std::uint16_t dest =
-                        get_destination(std::get<std::string>(inst.imm));
+                    std::uint16_t dest = get_destination(std::get<std::string>(inst.imm));
                     std::uint8_t addr_diff = static_cast<std::uint8_t>(
-                        static_cast<std::int16_t>(dest) -
-                        static_cast<std::int16_t>(inst_pc));
+                        static_cast<std::int16_t>(dest) - static_cast<std::int16_t>(inst_pc));
                     inst.imm = addr_diff;
                 }
             }
@@ -519,8 +494,7 @@ namespace exasm {
 
     void AsmReader::read_next(RawAsm &to) {
         if (!goto_next_instruction()) {
-            throw ParseError(
-                "AsmReader::read_next called after last instruction finished.");
+            throw ParseError("AsmReader::read_next called after last instruction finished.");
         }
 
         std::string label = maybe_read_label();

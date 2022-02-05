@@ -23,8 +23,7 @@ namespace exasm {
             return result;
         }
 
-        static Inst new_with_reg_reg(InstType inst, std::uint8_t rd,
-                                     std::uint8_t rs) {
+        static Inst new_with_reg_reg(InstType inst, std::uint8_t rd, std::uint8_t rs) {
             Inst result;
             result.inst = inst;
             result.rd = rd;
@@ -32,8 +31,7 @@ namespace exasm {
             return result;
         }
 
-        static Inst new_with_reg_imm(InstType inst, std::uint8_t rd,
-                                     std::uint8_t imm) {
+        static Inst new_with_reg_imm(InstType inst, std::uint8_t rd, std::uint8_t imm) {
             Inst result;
             result.inst = inst;
             result.rd = rd;
@@ -41,8 +39,7 @@ namespace exasm {
             return result;
         }
 
-        static Inst new_with_reg_label(InstType inst, std::uint8_t rd,
-                                       std::string label_name) {
+        static Inst new_with_reg_label(InstType inst, std::uint8_t rd, std::string label_name) {
             Inst result;
             result.inst = inst;
             result.rd = rd;

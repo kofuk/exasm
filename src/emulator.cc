@@ -17,21 +17,16 @@ namespace exasm {
             return static_cast<std::int16_t>(static_cast<std::int8_t>(num));
         }
 
-        [[maybe_unused]] std::ostream &operator<<(std::ostream &out,
-                                                  const ExecHistory &eh) {
+        [[maybe_unused]] std::ostream &operator<<(std::ostream &out, const ExecHistory &eh) {
             switch (eh.type) {
             case ExecHistoryType::CHANGE_PC:
-                out << "ExecHistoryType::CHANGE_PC{old_pc: "
-                    << eh.event.pc.old_pc
+                out << "ExecHistoryType::CHANGE_PC{old_pc: " << eh.event.pc.old_pc
                     << ", old_branched_pc: " << eh.event.pc.old_branched_pc
-                    << ", old_delay_slot_rem: "
-                    << eh.event.pc.old_delay_slot_rem
-                    << ", old_is_delay_slot: " << eh.event.pc.old_is_delay_slot
-                    << "}";
+                    << ", old_delay_slot_rem: " << eh.event.pc.old_delay_slot_rem
+                    << ", old_is_delay_slot: " << eh.event.pc.old_is_delay_slot << "}";
                 break;
             case ExecHistoryType::CHANGE_REG:
-                out << "ExecHistoryType::CHANGE_REG{regnum: "
-                    << +eh.event.reg.regnum
+                out << "ExecHistoryType::CHANGE_REG{regnum: " << +eh.event.reg.regnum
                     << ", old_val: " << eh.event.reg.old_val << "}";
                 break;
             case ExecHistoryType::CHANGE_MEM:
@@ -144,8 +139,8 @@ namespace exasm {
         Inst inst = prog[exec_addr / 2];
         transaction.emplace_back([&] {
             if (enable_exec_history) {
-                record_exec_history(ExecHistory::of_change_pc(
-                    pc, delay_slot_rem, is_delay_slot, branched_pc));
+                record_exec_history(
+                    ExecHistory::of_change_pc(pc, delay_slot_rem, is_delay_slot, branched_pc));
             }
             pc += 2;
         });

@@ -7,8 +7,8 @@
 #include "emulator.h"
 
 namespace {
-    void pretty_print_mem(const std::array<std::uint8_t, 0x10000> &mem,
-                          int start = 0, int end = 0x10000) {
+    void pretty_print_mem(const std::array<std::uint8_t, 0x10000> &mem, int start = 0,
+                          int end = 0x10000) {
         start &= ~0x7;
         end &= ~0x7;
         for (int i = start; i < end; ++i) {

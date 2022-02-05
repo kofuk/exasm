@@ -50,10 +50,8 @@ namespace exasm {
             } reg;
         } event;
 
-        static ExecHistory of_change_pc(std::uint16_t old_pc,
-                                        int old_delay_slot_rem,
-                                        bool old_is_delay_slot,
-                                        std::uint16_t old_branched_pc) {
+        static ExecHistory of_change_pc(std::uint16_t old_pc, int old_delay_slot_rem,
+                                        bool old_is_delay_slot, std::uint16_t old_branched_pc) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_PC;
             eh.event.pc.old_pc = old_pc;
@@ -63,8 +61,7 @@ namespace exasm {
             return eh;
         }
 
-        static ExecHistory of_change_mem(std::uint16_t addr,
-                                         std::uint8_t old_val) {
+        static ExecHistory of_change_mem(std::uint16_t addr, std::uint8_t old_val) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_MEM;
             eh.event.mem.addr = addr;
@@ -72,8 +69,7 @@ namespace exasm {
             return eh;
         }
 
-        static ExecHistory of_change_reg(std::uint8_t regnum,
-                                         std::uint16_t old_val) {
+        static ExecHistory of_change_reg(std::uint8_t regnum, std::uint16_t old_val) {
             ExecHistory eh;
             eh.type = ExecHistoryType::CHANGE_REG;
             eh.event.reg.regnum = regnum;
@@ -102,9 +98,7 @@ namespace exasm {
 
         void set_pc(std::uint16_t pc) { this->pc = pc; }
 
-        void record_exec_history(ExecHistory hist) {
-            exec_history.push_back(std::move(hist));
-        }
+        void record_exec_history(ExecHistory hist) { exec_history.push_back(std::move(hist)); }
 
         bool should_trap(std::uint16_t addr) const;
 
@@ -128,16 +122,13 @@ namespace exasm {
             }
         }
 
-        const std::array<std::uint8_t, 0x10000> &get_memory() const {
-            return mem;
-        }
+        const std::array<std::uint8_t, 0x10000> &get_memory() const { return mem; }
 
         std::uint8_t get_memory(std::uint16_t addr) const { return mem[addr]; }
 
         void set_memory(std::uint16_t addr, std::uint8_t val) {
             if (enable_exec_history) {
-                record_exec_history(
-                    ExecHistory::of_change_mem(addr, mem[addr]));
+                record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
             }
 
             mem[addr] = val;
@@ -147,16 +138,13 @@ namespace exasm {
 
         void set_register(std::uint8_t regnum, std::uint16_t val) {
             if (enable_exec_history) {
-                record_exec_history(
-                    ExecHistory::of_change_reg(regnum, reg[regnum]));
+                record_exec_history(ExecHistory::of_change_reg(regnum, reg[regnum]));
             }
 
             reg[regnum] = val;
         }
 
-        void set_program(std::vector<Inst> &&prog) {
-            this->prog = std::move(prog);
-        }
+        void set_program(std::vector<Inst> &&prog) { this->prog = std::move(prog); }
 
         void set_program(std::vector<Inst> &prog) { this->prog = prog; }
         const std::vector<Inst> &get_program() const { return this->prog; }
