@@ -49,6 +49,10 @@ __attribute__((used)) std::uint16_t next_clock(EmulatorWrapper *ew) {
         std::cerr << "Breakpoint hit\n";
         breakpoint_hit = true;
         break_addr = bp.get_addr();
+    } catch (exasm::Watchpoint &wp) {
+        std::cerr << "Watchpoint hit\n";
+        breakpoint_hit = true;
+        break_addr = 0;
     }
     return 0;
 }
@@ -64,7 +68,7 @@ __attribute__((used)) void set_mem_value(EmulatorWrapper *ew, std::uint8_t *new_
                                          std::uint16_t n, std::uint16_t base_addr) {
     for (int i = 0; i < n; ++i) {
         if (ew->emu->get_memory()[base_addr + i] != new_val[i]) {
-            ew->emu->set_memory(base_addr + i, new_val[i]);
+            ew->emu->set_memory_b(base_addr + i, new_val[i]);
         }
     }
 }
@@ -97,6 +101,15 @@ __attribute__((used)) void set_breakpoint(EmulatorWrapper *ew, std::uint16_t add
 
 __attribute__((used)) void remove_breakpoint(EmulatorWrapper *ew, std::uint16_t addr) {
     ew->emu->remove_breakpoint(addr);
+}
+
+__attribute__((used)) void set_watchpoint(EmulatorWrapper *ew, std::uint16_t addr, bool read,
+                                          bool write) {
+    ew->emu->set_watchpoint(addr, read, write);
+}
+
+__attribute__((used)) void remove_watchpoint(EmulatorWrapper *ew, std::uint16_t addr) {
+    ew->emu->remove_watchpoint(addr);
 }
 
 __attribute__((used)) int get_hit_breakpoint() {

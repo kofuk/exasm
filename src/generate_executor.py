@@ -19,8 +19,10 @@ if __name__ == '__main__':
                 .replace('rd', 'inst.rd') \
                 .replace('rs', 'inst.rs') \
                 .replace('setreg', 'set_register') \
-                .replace('setmem', 'set_memory') \
-                .replace('getmem', 'get_memory') \
+                .replace('setmemb', 'set_memory_b') \
+                .replace('setmemw', 'set_memory_w') \
+                .replace('getmemb', 'get_memory_b') \
+                .replace('getmemw', 'get_memory_w') \
                 .replace('imm', 'std::get<std::uint8_t>(inst.imm)') \
                 .replace('addr', 'reg[inst.rs]')
 

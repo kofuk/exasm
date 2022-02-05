@@ -169,7 +169,7 @@
         "args": ["rd", "addr"],
         "opcode": "0000",
         "word_align": true,
-        "action": "setmem(addr, ubyte(reg[rd] >> 8)); setmem(addr + 1, ubyte(reg[rd] & 0xFF));"
+        "action": "setmemw(addr, reg[rd])"
     },
     {
         "name": "lw",
@@ -177,7 +177,7 @@
         "args": ["rd", "addr"],
         "opcode": "0001",
         "word_align": true,
-        "action": "setreg(rd, uword(getmem(addr) << 8) | getmem(addr + 1))"
+        "action": "setreg(rd, getmemw(addr))"
     },
     {
         "name": "sbu",
@@ -185,7 +185,7 @@
         "args": ["rd", "addr"],
         "opcode": "0010",
         "word_align": false,
-        "action": "setmem(addr, ubyte(reg[rd]))"
+        "action": "setmemb(addr, ubyte(reg[rd]))"
     },
     {
         "name": "lbu",
@@ -193,6 +193,6 @@
         "args": ["rd", "addr"],
         "opcode": "0011",
         "word_align": false,
-        "action": "setreg(rd, ubyte(getmem(addr)))"
+        "action": "setreg(rd, ubyte(getmemb(addr)))"
     }
 ]

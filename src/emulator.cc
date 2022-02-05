@@ -115,6 +115,76 @@ namespace exasm {
         return enable_trap && bp != breakpoints.end();
     }
 
+    std::uint8_t Emulator::get_memory_b(std::uint16_t addr) const {
+        if (enable_trap) {
+            auto wp = std::find_if(watchpoints.begin(), watchpoints.end(),
+                                   [&](const WatchpointInfo &e) { return e.addr() == addr; });
+            if (wp != watchpoints.end()) {
+                if (wp->watches_write()) {
+                    throw Watchpoint(addr, true);
+                }
+            }
+        }
+
+        return mem[addr];
+    }
+
+    std::uint16_t Emulator::get_memory_w(std::uint16_t addr) const {
+        if (enable_trap) {
+            auto wp =
+                std::find_if(watchpoints.begin(), watchpoints.end(), [&](const WatchpointInfo &e) {
+                    return e.addr() == addr || e.addr() == addr + 1;
+                });
+            if (wp != watchpoints.end()) {
+                if (wp->watches_write()) {
+                    throw Watchpoint(addr, true);
+                }
+            }
+        }
+
+        return (mem[addr] << 8) | mem[addr + 1];
+    }
+
+    void Emulator::set_memory_b(std::uint16_t addr, std::uint8_t val) {
+        if (enable_trap) {
+            auto wp = std::find_if(watchpoints.begin(), watchpoints.end(),
+                                   [&](const WatchpointInfo &e) { return e.addr() == addr; });
+            if (wp != watchpoints.end()) {
+                if (wp->watches_write()) {
+                    throw Watchpoint(addr, false);
+                }
+            }
+        }
+
+        if (enable_exec_history) {
+            record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
+        }
+
+        mem[addr] = val;
+    }
+
+    void Emulator::set_memory_w(std::uint16_t addr, std::uint16_t val) {
+        if (enable_trap) {
+            auto wp =
+                std::find_if(watchpoints.begin(), watchpoints.end(), [&](const WatchpointInfo &e) {
+                    return e.addr() == addr || e.addr() == addr + 1;
+                });
+            if (wp != watchpoints.end()) {
+                if (wp->watches_write()) {
+                    throw Watchpoint(addr, false);
+                }
+            }
+        }
+
+        if (enable_exec_history) {
+            record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
+            record_exec_history(ExecHistory::of_change_mem(addr + 1, mem[addr + 1]));
+        }
+
+        mem[addr] = val >> 8;
+        mem[addr + 1] = val & 0xFF;
+    }
+
     std::uint16_t Emulator::clock() {
         std::vector<std::function<void()>> transaction;
 
@@ -173,7 +243,27 @@ namespace exasm {
 
     void Emulator::remove_breakpoint(std::uint16_t addr) {
         auto pos = std::find(breakpoints.begin(), breakpoints.end(), addr);
-        breakpoints.erase(pos);
+        if (pos != breakpoints.end()) {
+            breakpoints.erase(pos);
+        }
+    }
+
+    void Emulator::set_watchpoint(std::uint16_t addr, bool read, bool write) {
+        auto pos = std::find_if(watchpoints.begin(), watchpoints.end(),
+                                [&](const WatchpointInfo &e) { return e.addr() == addr; });
+        if (pos == watchpoints.end()) {
+            watchpoints.emplace_back(WatchpointInfo(addr, read, write));
+        } else {
+            pos->set_mode(read, write);
+        }
+    }
+
+    void Emulator::remove_watchpoint(std::uint16_t addr) {
+        auto pos = std::find_if(watchpoints.begin(), watchpoints.end(),
+                                [&](const WatchpointInfo &e) { return e.addr() == addr; });
+        if (pos != watchpoints.end()) {
+            watchpoints.erase(pos);
+        }
     }
 
     std::uint16_t Emulator::reverse_next_clock() {

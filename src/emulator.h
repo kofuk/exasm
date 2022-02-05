@@ -2,6 +2,7 @@
 #define EMULATOR_HH
 
 #include <array>
+#include <exception>
 #include <istream>
 #include <random>
 #include <stdexcept>
@@ -22,6 +23,18 @@ namespace exasm {
         Breakpoint(std::uint16_t addr) : addr(addr) {}
 
         std::uint16_t get_addr() const { return addr; };
+    };
+
+    class Watchpoint : public std::exception {
+        std::uint16_t addr_;
+        bool is_read_;
+
+    public:
+        Watchpoint(std::uint16_t addr, bool is_read) : addr_(addr), is_read_(is_read) {}
+
+        std::uint16_t get_addr() const { return addr_; }
+        bool is_read() const { return is_read_; }
+        bool is_write() const { return !is_read_; }
     };
 
     enum class ExecHistoryType {
@@ -78,12 +91,33 @@ namespace exasm {
         }
     };
 
+    class WatchpointInfo {
+        std::uint16_t addr_;
+        int mode_;
+
+    public:
+        WatchpointInfo(std::uint16_t addr, bool read, bool write) : addr_(addr) {
+            set_mode(read, write);
+        }
+
+        std::uint16_t addr() const { return addr_; }
+
+        bool watches_read() const { return ((mode_ >> 1) & 0x1) == 1; }
+
+        bool watches_write() const { return ((mode_ >> 0) & 0x1) == 1; }
+
+        void set_mode(bool read, bool write) {
+            mode_ = (static_cast<int>(read) << 1) | static_cast<int>(write);
+        }
+    };
+
     class Emulator {
         std::array<std::uint8_t, 0x10000> mem;
         std::vector<Inst> prog;
         std::array<std::uint16_t, 8> reg;
 
         std::vector<std::uint16_t> breakpoints;
+        std::vector<WatchpointInfo> watchpoints;
         bool enable_trap = true;
 
         std::uint16_t pc = 0;
@@ -124,15 +158,11 @@ namespace exasm {
 
         const std::array<std::uint8_t, 0x10000> &get_memory() const { return mem; }
 
-        std::uint8_t get_memory(std::uint16_t addr) const { return mem[addr]; }
+        std::uint8_t get_memory_b(std::uint16_t addr) const;
+        std::uint16_t get_memory_w(std::uint16_t addr) const;
 
-        void set_memory(std::uint16_t addr, std::uint8_t val) {
-            if (enable_exec_history) {
-                record_exec_history(ExecHistory::of_change_mem(addr, mem[addr]));
-            }
-
-            mem[addr] = val;
-        }
+        void set_memory_b(std::uint16_t addr, std::uint8_t val);
+        void set_memory_w(std::uint16_t addr, std::uint16_t val);
 
         const std::array<std::uint16_t, 8> &get_register() const { return reg; }
 
@@ -152,6 +182,8 @@ namespace exasm {
         void load_memfile(std::istream &strm);
         void set_breakpoint(std::uint16_t addr);
         void remove_breakpoint(std::uint16_t addr);
+        void set_watchpoint(std::uint16_t addr, bool read, bool write);
+        void remove_watchpoint(std::uint16_t addr);
         void set_enable_trap(bool enable) { enable_trap = enable; }
 
         std::uint16_t clock();
