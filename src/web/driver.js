@@ -447,6 +447,42 @@ addEventListener('load', () => {
             createMemTable();
             updateEmulatorStatus();
         });
+    document.getElementById('set_range')
+        .addEventListener('wheel', e => {
+            e.preventDefault();
+
+            const direction = e.deltaY > 0 ? 1 : -1;
+            const start = document.getElementById('mem_start');
+            const end = document.getElementById('mem_end');
+            const curStart = parseInt(start.value);
+            const curEnd = parseInt(end.value);
+
+            if ((direction == -1 && curStart < 0x8) ||
+                (direction == 1 && curEnd > 0xFFFF)) {
+                return;
+            }
+
+            start.value = '0x' + (curStart + direction * 8).toString(16);
+            end.value = '0x' + (curEnd + direction * 8).toString(16);
+
+            createMemTable();
+            updateEmulatorStatus();
+        });
+    for (const memInput of ['mem_start', 'mem_end']) {
+        document.getElementById(memInput)
+            .addEventListener('wheel', e => {
+                e.preventDefault();
+                const direction = e.deltaY > 0 ? 1 : -1;
+                const curVal = parseInt(e.target.value);
+                if ((direction == -1 && curVal < 0x8) ||
+                    (direction == 1 && curVal > 0xFFFF)) {
+                    return;
+                }
+                e.target.value = '0x' + (curVal + direction * 8).toString(16);
+                createMemTable();
+                updateEmulatorStatus();
+            });
+    }
     document.getElementById('clock')
         .addEventListener('click', e => {
             states.continueInterrupted = true;
