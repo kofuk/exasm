@@ -453,6 +453,14 @@ namespace exasm {
                     inst.imm = addr_diff;
                 }
             }
+
+            if (!insts.empty()) {
+                if (is_inst_branch(insts.back().inst)) {
+                    insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
+                                        static_cast<std::uint16_t>(insts.size() << 1));
+                }
+            }
+
             label_addr_mapping.clear();
             linked = true;
         }
