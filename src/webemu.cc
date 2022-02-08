@@ -162,7 +162,7 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile, std::size_t 
 
 __attribute__((used)) void destroy_emulator(EmulatorWrapper *ew) {
     delete ew;
-    breakpoint_hit = true;
+    breakpoint_hit = false;
 }
 
 __attribute__((used)) char *serialize_mem(EmulatorWrapper *ew) {

@@ -429,6 +429,7 @@ addEventListener('load', () => {
                 const memdata = putStringToHeap(editorData['editor_mem'].model.getValue());
                 const progdata = putStringToHeap(editorData['editor_prog'].model.getValue());
 
+                states.breakpoints = [];
                 emulator = Module.ccall('init_emulator', 'number',
                                         ['number', 'number', 'number', 'numer'],
                                         [memdata[0], memdata[1], progdata[0], progdata[1]]);
