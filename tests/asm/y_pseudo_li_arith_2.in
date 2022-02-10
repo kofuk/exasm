@@ -1,0 +1,2 @@
+.li r0, @foo-0x1
+@foo nop

@@ -109,7 +109,8 @@ if meson.can_run_host_binaries()
     'n_invalid_imm', 'n_label_duplicate', 'y_label_simple', 'y_jump_to_label', 'y_long_jump_forward',
     'y_long_jump_forward_2', 'y_long_jump_forward_3', 'y_long_jump_forward_4',
     'y_long_jump_backward', 'y_long_jump_backward_2', 'y_long_jump_backward_3',
-    'y_long_jump_backward_4', 'y_missing_delay_slot',
+    'y_long_jump_backward_4', 'y_missing_delay_slot', 'y_pseudo_li_simple', 'y_pseudo_li_arith',
+    'y_pseudo_li_arith_2', 'y_pseudo_li_large_num',
   ]
   emu_testcases = [
     'y_reg_arith', 'y_imm_arith', 'y_branch', 'y_mem', 'y_break_simple', 'n_unaligned_word_access',

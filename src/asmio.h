@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -11,6 +12,7 @@ namespace exasm {
     enum class InstType;
 
     enum class PseudoInst {
+        PLACEHOLDER,
         LI,
     };
 
@@ -20,6 +22,7 @@ namespace exasm {
         std::uint8_t rd;
         std::uint8_t rs;
         std::variant<std::uint8_t, std::string> imm;
+        std::uint16_t pseudo_param;
 
         static Inst new_with_type(InstType inst) {
             Inst result;
@@ -58,6 +61,16 @@ namespace exasm {
             return result;
         }
 
+        static Inst new_with_p_reg_imm(PseudoInst inst, std::uint8_t rd, std::string label_name,
+                                       std::uint16_t pseudo_param) {
+            Inst result;
+            result.inst = inst;
+            result.rd = rd;
+            result.imm = label_name;
+            result.pseudo_param = pseudo_param;
+            return result;
+        }
+
         void print_asm(std::ostream &out) const;
 
         void print_bin(std::ostream &out) const;
@@ -82,6 +95,8 @@ namespace exasm {
 
         std::uint16_t get_destination(const std::string &label_name);
         void add_label(const std::string &label_name, std::uint16_t addr);
+        void pre_handle_pseudo_instructions();
+        void post_handle_pseudo_instructions();
         void handle_long_jump();
         void insert_inst_at_addr(Inst inst, std::uint16_t addr);
 
@@ -105,8 +120,9 @@ namespace exasm {
         bool skip_newline();
         bool goto_next_instruction();
         std::uint8_t read_reg(std::string king);
+        bool maybe_read(char c);
         void must_read(char c, std::string context);
-        std::uint8_t read_immediate(bool allow_sign);
+        template <typename T> T read_immediate(bool allow_sign);
         std::string maybe_read_label();
 
     public:

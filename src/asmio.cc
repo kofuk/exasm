@@ -66,7 +66,7 @@ namespace exasm {
             if (strm.fail()) {
                 break;
             }
-            if (('a' <= c && c <= 'z') || ('0' <= c && c <= '9')) {
+            if ((inst.empty() && c == '.') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9')) {
                 inst.push_back(c);
             } else {
                 strm.unget();
@@ -228,7 +228,20 @@ namespace exasm {
         }
     }
 
-    std::uint8_t AsmReader::read_immediate(bool allow_sign) {
+    bool AsmReader::maybe_read(char c) {
+        char d;
+        strm.get(d);
+        if (strm.fail()) {
+            return false;
+        }
+        if (c == d) {
+            return true;
+        }
+        strm.unget();
+        return false;
+    }
+
+    template <typename T> T AsmReader::read_immediate(bool allow_sign) {
         char c;
         strm.get(c);
         if (strm.fail()) {
@@ -245,7 +258,7 @@ namespace exasm {
             }
         }
 
-        std::uint8_t result = 0;
+        T result = 0;
         int base = 10;
         if (c == '0') {
             base = 8;
@@ -383,6 +396,52 @@ namespace exasm {
         insts.insert(insts.begin() + static_cast<std::size_t>(addr) / 2, std::move(inst));
     }
 
+    void RawAsm::pre_handle_pseudo_instructions() {
+        for (std::size_t i = 0; i < insts.size(); ++i) {
+            if (!std::holds_alternative<PseudoInst>(insts[i].inst)) {
+                continue;
+            }
+            Inst inst = insts[i];
+            switch (std::get<PseudoInst>(insts[i].inst)) {
+            case PseudoInst::PLACEHOLDER:
+                break;
+            case PseudoInst::LI:
+                insert_inst_at_addr(Inst::new_with_p_reg_imm(PseudoInst::PLACEHOLDER, 0, "", 0),
+                                    static_cast<std::uint16_t>((i + 1) * 2));
+                ++i;
+                break;
+            }
+        }
+    }
+
+    void RawAsm::post_handle_pseudo_instructions() {
+        for (std::size_t i = 0; i < insts.size(); ++i) {
+            if (!std::holds_alternative<PseudoInst>(insts[i].inst)) {
+                continue;
+            }
+            switch (std::get<PseudoInst>(insts[i].inst)) {
+            case PseudoInst::PLACEHOLDER:
+                break;
+            case PseudoInst::LI: {
+                std::uint16_t actual_imm;
+                if (std::get<std::string>(insts[i].imm).empty()) {
+                    actual_imm = insts[i].pseudo_param;
+                } else {
+                    actual_imm = get_destination(std::get<std::string>(insts[i].imm));
+                    actual_imm += static_cast<std::int16_t>(insts[i].pseudo_param);
+                }
+                insts[i].inst = InstType::LUI;
+                insts[i].imm = static_cast<std::uint8_t>(actual_imm >> 8);
+                insts[i + 1].inst = InstType::ORI;
+                insts[i + 1].rd = insts[i].rd;
+                insts[i + 1].imm = static_cast<std::uint8_t>(actual_imm & 0xFF);
+                ++i;
+                break;
+            }
+            }
+        }
+    }
+
 #include "inst_traits.inc"
 
     void RawAsm::handle_long_jump() {
@@ -390,6 +449,9 @@ namespace exasm {
         while (has_edit) {
             has_edit = false;
             for (std::size_t i = 0; i < insts.size(); ++i) {
+                if (!std::holds_alternative<InstType>(insts[i].inst)) {
+                    continue;
+                }
                 if (!is_inst_branch(std::get<InstType>(insts[i].inst))) {
                     continue;
                 }
@@ -402,7 +464,8 @@ namespace exasm {
                     while (static_cast<int>(from) - static_cast<int>(to) > 128) {
                         has_edit = true;
                         std::uint16_t insert_addr = from - 124;
-                        if (is_inst_branch(
+                        if (std::holds_alternative<InstType>(insts[(insert_addr >> 1) - 1].inst) &&
+                            is_inst_branch(
                                 std::get<InstType>(insts[(insert_addr >> 1) - 1].inst))) {
                             insert_addr += 2;
                         }
@@ -423,7 +486,8 @@ namespace exasm {
                     while (static_cast<int>(to) - static_cast<int>(from) > 127) {
                         has_edit = true;
                         std::uint16_t insert_addr = from + 120;
-                        if (is_inst_branch(
+                        if (std::holds_alternative<InstType>(insts[(insert_addr >> 1) - 1].inst) &&
+                            is_inst_branch(
                                 std::get<InstType>(insts[(insert_addr >> 1) - 1].inst))) {
                             insert_addr += 2;
                         }
@@ -447,7 +511,9 @@ namespace exasm {
 
     std::vector<Inst> RawAsm::get_executable() {
         if (!linked) {
+            pre_handle_pseudo_instructions();
             handle_long_jump();
+            post_handle_pseudo_instructions();
 
             std::uint16_t inst_pc = 0;
             for (Inst &inst : insts) {
@@ -523,10 +589,34 @@ namespace exasm {
         } else if (std::holds_alternative<PseudoInst>(types)) {
             PseudoInst ty = std::get<PseudoInst>(types);
             switch (ty) {
-            case PseudoInst::LI:
-                // TODO: load immediate (loads 16bit-width integer) pseudo instruction
-                throw std::runtime_error("Not implemented");
-                break;
+            case PseudoInst::PLACEHOLDER:
+                return;
+            case PseudoInst::LI: {
+                skip_space();
+                std::uint8_t rd = read_reg("destination");
+                skip_space();
+                must_read(',', "after operand");
+                skip_space();
+                std::string imm_label = maybe_read_label();
+                if (imm_label.empty()) {
+                    // 16-bit immediate
+                    std::uint16_t imm = read_immediate<std::uint16_t>(true);
+                    to.append(Inst::new_with_p_reg_imm(ty, rd, imm_label, imm), label);
+                } else {
+                    // @foo+0xde
+                    std::uint16_t addition = 0;
+                    if (maybe_read('+')) {
+                        addition = read_immediate<std::uint16_t>(false);
+                    } else if (maybe_read('-')) {
+                        addition = read_immediate<std::uint16_t>(false);
+                        addition = ~addition + 1;
+                    }
+                    to.append(Inst::new_with_p_reg_imm(ty, rd, imm_label, addition), label);
+                }
+                skip_space();
+                must_read_newline("after pseudo operand");
+                return;
+            }
             }
         }
 

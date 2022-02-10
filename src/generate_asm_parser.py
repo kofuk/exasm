@@ -31,7 +31,7 @@ if __name__ == '__main__':
                 elif inst['args'][i] == 'imm':
                     signed_imm = 'true' if inst['signed_imm'] else 'false'
                     write_line_directive(out, currentframe())
-                    out.write(f'    std::uint8_t imm = read_immediate({signed_imm});\n')
+                    out.write(f'    std::uint8_t imm = read_immediate<std::uint8_t>({signed_imm});\n')
                 elif inst['args'][i] == 'addr':
                     write_line_directive(out, currentframe())
                     out.write('    must_read(\'(\', "before address register");\n')
@@ -43,7 +43,7 @@ if __name__ == '__main__':
                     write_line_directive(out, currentframe())
                     out.write('    std::string imm_label = maybe_read_label();\n')
                     out.write('    if (imm_label.empty()) {\n')
-                    out.write('        std::uint8_t baddr = read_immediate(true);\n')
+                    out.write('        std::uint8_t baddr = read_immediate<std::uint8_t>(true);\n')
                     out.write('        imm_label = to.add_auto_label(static_cast<std::int8_t>(baddr));\n')
                     out.write('    }\n')
                     out.write('    \n')
