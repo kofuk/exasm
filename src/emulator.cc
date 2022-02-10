@@ -5,6 +5,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "asmio.h"
@@ -145,7 +146,9 @@ namespace exasm {
             pc += 2;
         });
 
-        switch (inst.inst) {
+        assert(std::holds_alternative<InstType>(inst.inst));
+
+        switch (std::get<InstType>(inst.inst)) {
 #include "executor.inc"
         default:
             throw ExecutionError("Unsupported instruction");

@@ -58,7 +58,7 @@ namespace exasm {
         return result;
     }
 
-    InstType AsmReader::read_inst_type() {
+    std::variant<InstType, PseudoInst> AsmReader::read_inst_type() {
         std::string inst;
         for (;;) {
             char c;
@@ -75,6 +75,10 @@ namespace exasm {
         }
 
 #include "inst_name_to_enum.inc"
+
+        if (inst == ".li") {
+            return PseudoInst::LI;
+        }
 
         throw ParseError(format_error("Unknown instruction: " + inst));
     }
@@ -325,7 +329,7 @@ namespace exasm {
     }
 
     void Inst::print_asm(std::ostream &out) const {
-        switch (inst) {
+        switch (std::get<InstType>(inst)) {
 #include "asm_writer.inc"
         default:
             out << "<unknown>";
@@ -333,7 +337,7 @@ namespace exasm {
     }
 
     void Inst::print_bin(std::ostream &out) const {
-        switch (inst) {
+        switch (std::get<InstType>(inst)) {
 #include "inst_mem_writer.inc"
         default:
             asm_error("Illegal instruction");
@@ -386,7 +390,7 @@ namespace exasm {
         while (has_edit) {
             has_edit = false;
             for (std::size_t i = 0; i < insts.size(); ++i) {
-                if (!is_inst_branch(insts[i].inst)) {
+                if (!is_inst_branch(std::get<InstType>(insts[i].inst))) {
                     continue;
                 }
                 std::string orig_label = std::get<std::string>(insts[i].imm);
@@ -398,7 +402,8 @@ namespace exasm {
                     while (static_cast<int>(from) - static_cast<int>(to) > 128) {
                         has_edit = true;
                         std::uint16_t insert_addr = from - 124;
-                        if (is_inst_branch(insts[(insert_addr >> 1) - 1].inst)) {
+                        if (is_inst_branch(
+                                std::get<InstType>(insts[(insert_addr >> 1) - 1].inst))) {
                             insert_addr += 2;
                         }
 
@@ -418,7 +423,8 @@ namespace exasm {
                     while (static_cast<int>(to) - static_cast<int>(from) > 127) {
                         has_edit = true;
                         std::uint16_t insert_addr = from + 120;
-                        if (is_inst_branch(insts[(insert_addr >> 1) - 1].inst)) {
+                        if (is_inst_branch(
+                                std::get<InstType>(insts[(insert_addr >> 1) - 1].inst))) {
                             insert_addr += 2;
                         }
 
@@ -455,7 +461,7 @@ namespace exasm {
             }
 
             if (!insts.empty()) {
-                if (is_inst_branch(insts.back().inst)) {
+                if (is_inst_branch(std::get<InstType>(insts.back().inst))) {
                     insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
                                         static_cast<std::uint16_t>(insts.size() << 1));
                 }
@@ -508,9 +514,20 @@ namespace exasm {
         std::string label = maybe_read_label();
         skip_space();
 
-        InstType ty = read_inst_type();
-        switch (ty) {
+        std::variant<InstType, PseudoInst> types = read_inst_type();
+        if (std::holds_alternative<InstType>(types)) {
+            InstType ty = std::get<InstType>(types);
+            switch (ty) {
 #include "asm_parser.inc"
+            }
+        } else if (std::holds_alternative<PseudoInst>(types)) {
+            PseudoInst ty = std::get<PseudoInst>(types);
+            switch (ty) {
+            case PseudoInst::LI:
+                // TODO: load immediate (loads 16bit-width integer) pseudo instruction
+                throw std::runtime_error("Not implemented");
+                break;
+            }
         }
 
         throw ParseError(format_error("Unknown instruction"));

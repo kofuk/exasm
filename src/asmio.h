@@ -10,9 +10,13 @@
 namespace exasm {
     enum class InstType;
 
+    enum class PseudoInst {
+        LI,
+    };
+
     class Inst {
     public:
-        InstType inst;
+        std::variant<InstType, PseudoInst> inst;
         std::uint8_t rd;
         std::uint8_t rs;
         std::variant<std::uint8_t, std::string> imm;
@@ -94,7 +98,7 @@ namespace exasm {
 
         std::string format_error(std::string message = "");
 
-        InstType read_inst_type();
+        std::variant<InstType, PseudoInst> read_inst_type();
         void next_line();
         void skip_space();
         void must_read_newline(const std::string &context);
