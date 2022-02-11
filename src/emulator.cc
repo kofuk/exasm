@@ -129,7 +129,7 @@ namespace exasm {
         }
         std::uint16_t exec_addr = pc;
 
-        if (exec_addr / 2 >= prog.size()) {
+        if (exec_addr / 2 > prog.size()) {
             throw ExecutionError("Program finished");
         }
 

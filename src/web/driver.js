@@ -136,6 +136,9 @@ const createMemTable = () => {
 const blinkCurrentLine = (addr) => {
     clearBlinkLine();
     const el = document.getElementById('prog' + addr);
+    if (!el) {
+        return;
+    }
     el.classList.add('blinking')
     el.scrollIntoView({
         behavior: 'smooth',
