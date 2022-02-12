@@ -4,4 +4,8 @@ project(
   version : '1.0.0',
 )
 
+if get_option('cpp_std') != 'c++20'
+  error('Exasm requires C++20')
+endif
+
 subdir('src')
