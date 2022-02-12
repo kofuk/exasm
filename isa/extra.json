@@ -1,0 +1,10 @@
+[
+    {
+        "name": "xori",
+        "type": "imm",
+        "args": ["rd", "imm"],
+        "opcode": "0011",
+        "signed_imm": false,
+        "action": "setreg(rd, reg[rd] ^ uword(imm))"
+    }
+]

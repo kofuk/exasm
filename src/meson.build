@@ -1,4 +1,4 @@
-insts = files('../isa/basic.json')
+insts = files('../isa/basic.json', '../isa/extra.json')
 if get_option('ex_inst_t').enabled()
   insts += files('../isa/ex_t.json')
 endif
