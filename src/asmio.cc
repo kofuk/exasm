@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cctype>
 #include <optional>
 #include <stdexcept>
@@ -78,6 +79,8 @@ namespace exasm {
 
         if (inst == ".li") {
             return PseudoInst::LI;
+        } else if (inst == ".word") {
+            return PseudoInst::WORD;
         }
 
         throw ParseError(format_error("Unknown instruction: " + inst));
@@ -342,18 +345,35 @@ namespace exasm {
     }
 
     void Inst::print_asm(std::ostream &out) const {
-        switch (std::get<InstType>(inst)) {
+        if (std::holds_alternative<InstType>(inst)) {
+            switch (std::get<InstType>(inst)) {
 #include "asm_writer.inc"
-        default:
-            out << "<unknown>";
+            default:
+                out << "<unknown>";
+            }
+        } else {
+            const PseudoInst &pseudo_inst = std::get<PseudoInst>(inst);
+            assert(pseudo_inst == PseudoInst::WORD);
+            out << "<raw data>";
         }
     }
 
     void Inst::print_bin(std::ostream &out) const {
-        switch (std::get<InstType>(inst)) {
+        if (std::holds_alternative<InstType>(inst)) {
+            switch (std::get<InstType>(inst)) {
 #include "inst_mem_writer.inc"
-        default:
-            asm_error("Illegal instruction");
+            default:
+                asm_error("Illegal instruction");
+            }
+        } else {
+            const PseudoInst &pseudo_inst = std::get<PseudoInst>(inst);
+            assert(pseudo_inst == PseudoInst::WORD);
+            for (int i = 15; i >= 0; --i) {
+                out << ((pseudo_param >> i) & 1);
+                if (i == 8) {
+                    out << ' ';
+                }
+            }
         }
     }
 
@@ -410,6 +430,8 @@ namespace exasm {
                                     static_cast<std::uint16_t>((i + 1) * 2));
                 ++i;
                 break;
+            case PseudoInst::WORD:
+                break;
             }
         }
     }
@@ -438,6 +460,8 @@ namespace exasm {
                 ++i;
                 break;
             }
+            case PseudoInst::WORD:
+                break;
             }
         }
     }
@@ -527,7 +551,8 @@ namespace exasm {
             }
 
             if (!insts.empty()) {
-                if (is_inst_branch(std::get<InstType>(insts.back().inst))) {
+                if (std::holds_alternative<InstType>(insts.back().inst) &&
+                    is_inst_branch(std::get<InstType>(insts.back().inst))) {
                     insert_inst_at_addr(Inst::new_with_type(InstType::NOP),
                                         static_cast<std::uint16_t>(insts.size() << 1));
                 }
@@ -615,6 +640,12 @@ namespace exasm {
                 }
                 skip_space();
                 must_read_newline("after pseudo operand");
+                return;
+            }
+            case PseudoInst::WORD: {
+                skip_space();
+                std::uint16_t data = read_immediate<std::uint16_t>(true);
+                to.append(Inst::new_with_data(data), label);
                 return;
             }
             }

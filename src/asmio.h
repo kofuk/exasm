@@ -14,6 +14,7 @@ namespace exasm {
     enum class PseudoInst {
         PLACEHOLDER,
         LI,
+        WORD,
     };
 
     class Inst {
@@ -68,6 +69,13 @@ namespace exasm {
             result.rd = rd;
             result.imm = label_name;
             result.pseudo_param = pseudo_param;
+            return result;
+        }
+
+        static Inst new_with_data(std::uint16_t data) {
+            Inst result;
+            result.inst = PseudoInst::WORD;
+            result.pseudo_param = data;
             return result;
         }
 

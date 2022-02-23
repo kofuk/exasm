@@ -146,7 +146,9 @@ namespace exasm {
             pc += 2;
         });
 
-        assert(std::holds_alternative<InstType>(inst.inst));
+        if (!std::holds_alternative<InstType>(inst.inst)) {
+            throw ExecutionError("Illegal instruction (you are about to execute raw word).");
+        }
 
         switch (std::get<InstType>(inst.inst)) {
 #include "executor.inc"
