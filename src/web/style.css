@@ -61,12 +61,6 @@ textarea {
     padding-left: 10px;
 }
 
-.trace-table {
-    display: block;
-    max-height: 350px;
-    overflow: auto;
-}
-
 .breakpoint-pane {
     flex: 1;
 }

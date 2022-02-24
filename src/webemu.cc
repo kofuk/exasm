@@ -73,11 +73,11 @@ __attribute__((used)) char *dump_program(EmulatorWrapper *ew) {
     std::ostringstream ostrm;
     try {
         std::uint16_t pc = ew->emu->get_pc();
-        int begin_addr = pc - 20;
+        int begin_addr = pc - 10;
         if (begin_addr < 0) {
             begin_addr = 0;
         }
-        int end_addr = pc + 20;
+        int end_addr = pc + 10;
         if (end_addr >= 0x10000) {
             end_addr = 0x10000;
         }
