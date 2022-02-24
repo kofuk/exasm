@@ -10,15 +10,6 @@
 
 namespace exasm {
     namespace {
-        [[noreturn]] void asm_error(const char *message = nullptr) {
-            std::cerr << "Asm error";
-            if (message != nullptr) {
-                std::cerr << ": " << message;
-            }
-            std::cerr << '\n';
-            std::exit(1);
-        }
-
         std::ostream &write_hex(std::ostream &out, std::uint8_t num, bool use_sign) {
             if (use_sign && (num >> 7) != 0) {
                 out << '-';
@@ -34,18 +25,6 @@ namespace exasm {
                 }
             }
             return out;
-        }
-
-        void write_reg_num_bin(std::ostream &out, std::uint8_t reg_num) {
-            for (int i = 2; i >= 0; --i) {
-                out << ((reg_num >> i) & 0x1);
-            }
-        }
-
-        void write_imm_bin(std::ostream &out, std::uint8_t imm) {
-            for (int i = 7; i >= 0; --i) {
-                out << ((imm >> i) & 0x1);
-            }
         }
     } // namespace
 
@@ -359,20 +338,12 @@ namespace exasm {
     }
 
     void Inst::print_bin(std::ostream &out) const {
-        if (std::holds_alternative<InstType>(inst)) {
-            switch (std::get<InstType>(inst)) {
-#include "inst_mem_writer.inc"
-            default:
-                asm_error("Illegal instruction");
-            }
-        } else {
-            const PseudoInst &pseudo_inst = std::get<PseudoInst>(inst);
-            assert(pseudo_inst == PseudoInst::WORD);
-            for (int i = 15; i >= 0; --i) {
-                out << ((pseudo_param >> i) & 1);
-                if (i == 8) {
-                    out << ' ';
-                }
+        std::uint16_t bin = encode();
+
+        for (int i = 15; i >= 0; --i) {
+            out << ((bin >> i) & 1);
+            if (i == 8) {
+                out << ' ';
             }
         }
     }
@@ -393,6 +364,19 @@ namespace exasm {
             }
         }
         return out;
+    }
+
+    Inst Inst::decode(std::uint16_t inst){
+#include "decoder.inc"
+    }
+
+    std::uint16_t Inst::encode() const {
+        if (std::holds_alternative<InstType>(inst)) {
+#include "encoder.inc"
+            assert(0);
+        }
+        assert(std::get<PseudoInst>(inst) == PseudoInst::WORD);
+        return pseudo_param;
     }
 
     void RawAsm::append(Inst &&inst, const std::string &label_name) {

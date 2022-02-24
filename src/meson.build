@@ -25,11 +25,6 @@ executor_inc = custom_target(
   input : ['generate_executor.py', insts],
   command : [python, '@INPUT@', '@OUTPUT@']
 )
-inst_mem_writer_inc = custom_target(
-  output : ['inst_mem_writer.inc'],
-  input : ['generate_inst_mem_writer.py', insts],
-  command : [python, '@INPUT@', '@OUTPUT@']
-)
 asm_writer_inc = custom_target(
   output : ['asm_writer.inc'],
   input : ['generate_asm_writer.py', insts],
@@ -40,12 +35,22 @@ inst_traits_inc = custom_target(
   input : ['generate_inst_traits.py', insts],
   command : [python, '@INPUT@', '@OUTPUT@']
 )
+decoder_inc = custom_target(
+  output : ['decoder.inc'],
+  input : ['generate_decoder.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
+encoder_inc = custom_target(
+  output : ['encoder.inc'],
+  input : ['generate_encoder.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
 
 asmio_lib = static_library(
   'asmio', 'asmio.cc',
   inst_type_enum_inc, inst_name_to_enum_inc,
-  asm_parser_inc, inst_mem_writer_inc,
-  asm_writer_inc, inst_traits_inc,
+  asm_parser_inc, asm_writer_inc, inst_traits_inc,
+  decoder_inc, encoder_inc,
 )
 emulator_lib = static_library(
   'emulator', 'emulator.cc',

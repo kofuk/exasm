@@ -12,6 +12,7 @@ namespace {
     std::uint16_t break_addr;
 
     struct EmulatorWrapper {
+        std::vector<exasm::Inst> prog;
         exasm::Emulator *emu;
 
         EmulatorWrapper(exasm::Emulator *emu) : emu(emu) {}
@@ -69,15 +70,47 @@ __attribute__((used)) void set_mem_value(EmulatorWrapper *ew, std::uint8_t *new_
     }
 }
 
+__attribute__((used)) char *dump_partial_program(EmulatorWrapper *ew) {
+    std::ostringstream ostrm;
+    try {
+        std::uint16_t pc = ew->emu->get_pc();
+        int begin_addr = pc - 10;
+        if (begin_addr < 0) {
+            begin_addr = 0;
+        }
+        int end_addr = pc + 10;
+        if (end_addr >= 0x10000) {
+            end_addr = 0x10000;
+        }
+        const std::array<std::uint8_t, 0x10000> &mem = ew->emu->get_memory();
+        for (int i = begin_addr; i < end_addr; i += 2) {
+            std::uint16_t bin = (mem[i] << 8) | mem[i + 1];
+            exasm::Inst inst = exasm::Inst::decode(bin);
+            exasm::write_addr(ostrm, i) << ' ';
+            inst.print_bin(ostrm);
+            ostrm << " // ";
+            inst.print_asm(ostrm);
+            ostrm << '\n';
+        }
+    } catch (exasm::ParseError &e) {
+        std::cerr << e.what() << '\n';
+    }
+    std::string out = ostrm.str().c_str();
+    char *cstr = new char[out.size() + 1];
+    std::copy(out.begin(), out.end(), cstr);
+    cstr[out.size()] = '\0';
+    return cstr;
+}
+
 __attribute__((used)) char *dump_program(EmulatorWrapper *ew) {
     std::ostringstream ostrm;
-    std::uint16_t addr = 0;
     try {
-        for (const exasm::Inst &i : ew->emu->get_program()) {
+        std::uint16_t addr = 0;
+        for (const exasm::Inst &inst : ew->prog) {
             exasm::write_addr(ostrm, addr) << ' ';
-            i.print_bin(ostrm);
+            inst.print_bin(ostrm);
             ostrm << " // ";
-            i.print_asm(ostrm);
+            inst.print_asm(ostrm);
             ostrm << '\n';
             addr += 2;
         }
@@ -153,6 +186,7 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile, std::size_t 
     emu->set_program(insts);
 
     auto *ew = new EmulatorWrapper(emu);
+    ew->prog = insts;
 
     std::istringstream prog_mem_strm(dump_program(ew));
     emu->load_memfile(prog_mem_strm);

@@ -144,15 +144,22 @@ namespace exasm {
             reg[regnum] = val;
         }
 
-        void set_program(std::vector<Inst> &&prog) { this->prog = std::move(prog); }
-
-        void set_program(std::vector<Inst> &prog) { this->prog = prog; }
-        const std::vector<Inst> &get_program() const { return this->prog; }
+        void set_program(const std::vector<Inst> &prog) {
+            std::uint16_t addr = 0;
+            for (const Inst &inst : prog) {
+                std::uint16_t bin = inst.encode();
+                mem[addr] = static_cast<std::uint8_t>(bin >> 8);
+                mem[addr + 1] = static_cast<std::uint8_t>(bin & 0xFF);
+                addr += 2;
+            }
+        }
 
         void load_memfile(std::istream &strm);
         void set_breakpoint(std::uint16_t addr);
         void remove_breakpoint(std::uint16_t addr);
         void set_enable_trap(bool enable) { enable_trap = enable; }
+
+        std::uint16_t get_pc() const { return pc; }
 
         std::uint16_t clock();
 
