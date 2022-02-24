@@ -140,6 +140,10 @@ const blinkCurrentLine = (addr) => {
         return;
     }
     el.classList.add('blinking')
+    el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+    });
 };
 
 const clearBlinkLine = () => {
@@ -161,18 +165,16 @@ const createTraceTable = () => {
 
     const traceBody = document.getElementById('trace_body');
     traceBody.innerHTML = '';
+    let addr = 0;
     prog.split('\n')
         .forEach(e => {
             if (e.length === 0) return;
-            const addr = Number.parseInt(e.split(' ')[0].replace('@', ''), 16);
-            const hasBreakpoint = states.breakpoints.filter((e) => typeof e.pc !== 'undefined' && e.pc === addr).length > 0;
             const tr = document.createElement('tr');
             tr.id = 'prog' + addr;
             const td = document.createElement('td');
             const checkBox = document.createElement('input');
             checkBox.type = 'checkbox';
             checkBox.id = 'break' + addr;
-            checkBox.checked = hasBreakpoint;
             checkBox.classList.add('breakpoint');
             checkBox.addEventListener('change', e => {
                 const addr = parseInt(e.target.id.replace('break', ''));
@@ -201,6 +203,7 @@ const createTraceTable = () => {
             td.appendChild(inst);
             tr.appendChild(td);
             traceBody.appendChild(tr);
+            addr += 2;
         });
 };
 
@@ -252,15 +255,7 @@ const states = new Proxy(
                         deleteButton.innerText = 'delete_outline';
                         deleteButton.addEventListener('click', () => {
                             if (typeof e.pc !== 'undefined') {
-                                const checkBox = document.getElementById('break' + e.pc);
-                                if (checkBox !== null){
-                                    checkBox.click();
-                                } else {
-                                    const addr = e.pc;
-                                    states.breakpoints = states.breakpoints.filter(e => typeof e.pc === 'undefined' || e.pc !== addr);
-                                    Module.ccall('remove_breakpoint', 'number', ['number', 'number'],
-                                                 [emulator, addr]);
-                                }
+                                document.getElementById('break' + e.pc).click();
                             }
                         });
                         deleteButton.classList.add('material-icons', 'button', 'delete');
@@ -294,9 +289,6 @@ const clock = () => {
     showError('');
 
     const addr = Module.ccall('next_clock', 'number', ['number'], [emulator]);
-
-    createTraceTable();
-
     const breakAddr = Module.ccall('get_hit_breakpoint', 'number', [], []);
     if (breakAddr >= 0) {
         blinkCurrentLine(breakAddr);
@@ -320,9 +312,6 @@ const reverseClock = () => {
 
     const addr = Module.ccall('reverse_next_clock', 'number', ['number'],
                               [emulator]);
-
-    createTraceTable();
-
     if (addr < 0) {
         clearBlinkLine();
     } else {
@@ -360,7 +349,7 @@ const initEditor = () => {
             root: [
                 [/r[0-7]/, 'predefined'],
                 [/[()]/, {open: '(', close: ')', token: 'delimiter.parenthesis'}],
-                [/\.?[a-z][a-z0-9]*/, 'keyword'],
+                [/[a-z][a-z0-9]*/, 'keyword'],
                 [/@[a-zA-Z_][a-zA-Z0-9_]*/, 'identifier'],
                 [/-?0x[0-9a-fA-F]+/, 'number.hex'],
                 [/-?0[0-9a-fA-F]+/, 'number.oct'],

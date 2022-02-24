@@ -71,25 +71,15 @@ __attribute__((used)) void set_mem_value(EmulatorWrapper *ew, std::uint8_t *new_
 
 __attribute__((used)) char *dump_program(EmulatorWrapper *ew) {
     std::ostringstream ostrm;
+    std::uint16_t addr = 0;
     try {
-        std::uint16_t pc = ew->emu->get_pc();
-        int begin_addr = pc - 10;
-        if (begin_addr < 0) {
-            begin_addr = 0;
-        }
-        int end_addr = pc + 10;
-        if (end_addr >= 0x10000) {
-            end_addr = 0x10000;
-        }
-        const std::array<std::uint8_t, 0x10000> &mem = ew->emu->get_memory();
-        for (int i = begin_addr; i < end_addr; i += 2) {
-            std::uint16_t bin = (mem[i] << 8) | mem[i + 1];
-            exasm::Inst inst = exasm::Inst::decode(bin);
-            exasm::write_addr(ostrm, i) << ' ';
-            inst.print_bin(ostrm);
+        for (const exasm::Inst &i : ew->emu->get_program()) {
+            exasm::write_addr(ostrm, addr) << ' ';
+            i.print_bin(ostrm);
             ostrm << " // ";
-            inst.print_asm(ostrm);
+            i.print_asm(ostrm);
             ostrm << '\n';
+            addr += 2;
         }
     } catch (exasm::ParseError &e) {
         std::cerr << e.what() << '\n';

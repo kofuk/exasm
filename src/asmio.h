@@ -28,8 +28,6 @@ namespace exasm {
         static Inst new_with_type(InstType inst) {
             Inst result;
             result.inst = inst;
-            result.rd = 0;
-            result.rs = 0;
             return result;
         }
 
@@ -45,7 +43,6 @@ namespace exasm {
             Inst result;
             result.inst = inst;
             result.rd = rd;
-            result.rs = 0;
             result.imm = imm;
             return result;
         }
@@ -54,7 +51,6 @@ namespace exasm {
             Inst result;
             result.inst = inst;
             result.rd = rd;
-            result.rs = 0;
             result.imm = label_name;
             return result;
         }
@@ -62,8 +58,6 @@ namespace exasm {
         static Inst new_with_label(InstType inst, std::string label_name) {
             Inst result;
             result.inst = inst;
-            result.rd = 0;
-            result.rs = 0;
             result.imm = label_name;
             return result;
         }
@@ -73,7 +67,6 @@ namespace exasm {
             Inst result;
             result.inst = inst;
             result.rd = rd;
-            result.rs = 0;
             result.imm = label_name;
             result.pseudo_param = pseudo_param;
             return result;
@@ -85,9 +78,6 @@ namespace exasm {
             result.pseudo_param = data;
             return result;
         }
-
-        static Inst decode(std::uint16_t inst);
-        std::uint16_t encode() const;
 
         void print_asm(std::ostream &out) const;
 

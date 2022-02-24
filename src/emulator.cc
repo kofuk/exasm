@@ -129,12 +129,15 @@ namespace exasm {
         }
         std::uint16_t exec_addr = pc;
 
+        if (exec_addr / 2 > prog.size()) {
+            throw ExecutionError("Program finished");
+        }
+
         if (should_trap(exec_addr)) {
             throw Breakpoint(exec_addr);
         }
 
-        std::uint16_t bin = (mem[exec_addr] << 8) | mem[exec_addr + 1];
-        Inst inst = Inst::decode(bin);
+        Inst inst = prog[exec_addr / 2];
         transaction.emplace_back([&] {
             if (enable_exec_history) {
                 record_exec_history(
