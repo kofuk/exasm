@@ -14,6 +14,7 @@ namespace {
     struct EmulatorWrapper {
         std::vector<exasm::Inst> prog;
         exasm::Emulator *emu;
+        std::uint16_t next_pc;
 
         EmulatorWrapper(exasm::Emulator *emu) : emu(emu) {}
         ~EmulatorWrapper() { delete emu; }
@@ -43,6 +44,7 @@ __attribute__((used)) std::uint16_t next_clock(EmulatorWrapper *ew) {
         } else {
             addr = ew->emu->clock();
         }
+        ew->next_pc = addr;
         return addr;
     } catch (exasm::ExecutionError &e) {
         std::cerr << e.what() << '\n';
@@ -73,7 +75,7 @@ __attribute__((used)) void set_mem_value(EmulatorWrapper *ew, std::uint8_t *new_
 __attribute__((used)) char *dump_partial_program(EmulatorWrapper *ew) {
     std::ostringstream ostrm;
     try {
-        std::uint16_t pc = ew->emu->get_pc();
+        std::uint16_t pc = ew->next_pc;
         int begin_addr = pc - 10;
         if (begin_addr < 0) {
             begin_addr = 0;
@@ -141,7 +143,9 @@ __attribute__((used)) int get_hit_breakpoint() {
 
 __attribute__((used)) int reverse_next_clock(EmulatorWrapper *ew) {
     try {
-        return static_cast<std::uint32_t>(ew->emu->reverse_next_clock());
+        std::uint16_t addr = ew->emu->reverse_next_clock();
+        ew->next_pc = addr;
+        return static_cast<std::uint32_t>(addr);
     } catch (std::exception &) {
         return -1;
     }
@@ -187,6 +191,7 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile, std::size_t 
 
     auto *ew = new EmulatorWrapper(emu);
     ew->prog = insts;
+    ew->next_pc = 0;
 
     std::istringstream prog_mem_strm(dump_program(ew));
     emu->load_memfile(prog_mem_strm);

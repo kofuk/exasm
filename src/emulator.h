@@ -159,8 +159,6 @@ namespace exasm {
         void remove_breakpoint(std::uint16_t addr);
         void set_enable_trap(bool enable) { enable_trap = enable; }
 
-        std::uint16_t get_pc() const { return pc; }
-
         std::uint16_t clock();
 
         std::uint16_t reverse_next_clock();
