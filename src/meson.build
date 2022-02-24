@@ -40,12 +40,17 @@ inst_traits_inc = custom_target(
   input : ['generate_inst_traits.py', insts],
   command : [python, '@INPUT@', '@OUTPUT@']
 )
+decoder_inc = custom_target(
+  output : ['decoder.inc'],
+  input : ['generate_decoder.py', insts],
+  command : [python, '@INPUT@', '@OUTPUT@']
+)
 
 asmio_lib = static_library(
   'asmio', 'asmio.cc',
   inst_type_enum_inc, inst_name_to_enum_inc,
   asm_parser_inc, inst_mem_writer_inc,
-  asm_writer_inc, inst_traits_inc,
+  asm_writer_inc, inst_traits_inc, decoder_inc,
 )
 emulator_lib = static_library(
   'emulator', 'emulator.cc',

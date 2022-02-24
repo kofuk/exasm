@@ -79,6 +79,8 @@ namespace exasm {
             return result;
         }
 
+        static Inst decode(std::uint16_t inst);
+
         void print_asm(std::ostream &out) const;
 
         void print_bin(std::ostream &out) const;

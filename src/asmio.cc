@@ -395,6 +395,10 @@ namespace exasm {
         return out;
     }
 
+    Inst Inst::decode(std::uint16_t inst) {
+#include "decoder.inc"
+    }
+
     void RawAsm::append(Inst &&inst, const std::string &label_name) {
         if (linked) {
             throw std::logic_error("Appending to linked RawAsm is not allowed");
