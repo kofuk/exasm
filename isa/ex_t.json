@@ -1,6 +1,8 @@
 [
     {
         "name": "sr4",
+        "meaning": "Shift Left 4 bits",
+        "doc": "Logical-shifts register `rs` to the right 4 bit, then store the result to register `rd`.",
         "type": "reg_arith",
         "args": ["rd", "rs"],
         "opcode": "1100",

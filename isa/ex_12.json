@@ -1,6 +1,8 @@
 [
     {
         "name": "mapblk",
+        "meaning": "Map Block Information",
+        "doc": "Lookup address of block information by block number. Upper nibble of lower byte is used to determine block number.",
         "type": "reg_arith",
         "args": ["rd", "rs"],
         "opcode": "1100",
@@ -8,6 +10,8 @@
     },
     {
         "name": "addv",
+        "meaning": "Add Vectorize",
+        "doc": "Adds each bytes of register `rd` to corresponding position of `rs` simultaneously.",
         "type": "reg_arith",
         "args": ["rd", "rs"],
         "opcode": "1101",

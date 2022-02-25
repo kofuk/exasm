@@ -95,6 +95,14 @@ if host_machine.system() == 'emscripten'
     install_dir : html_install_dir,
   )
 
+  custom_target(
+    output : ['instructions.html'],
+    input : ['generate_doc.py', insts],
+    command : [python, '@INPUT@', '@OUTPUT@'],
+    install : true,
+    install_dir : html_install_dir,
+  )
+
   install_data('web/driver.js', install_dir : html_install_dir)
   install_data('web/style.css', install_dir : html_install_dir)
 else

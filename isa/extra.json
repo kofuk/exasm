@@ -1,6 +1,8 @@
 [
     {
         "name": "xori",
+        "meaning": "Exclusive OR Immediate",
+        "doc": "Takes bitwise XOR of register `rd` and immediate `imm`, then stores the result to `rd`.",
         "type": "imm",
         "args": ["rd", "imm"],
         "opcode": "0011",
