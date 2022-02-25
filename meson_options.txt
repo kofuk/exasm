@@ -10,3 +10,9 @@ option(
   value : 'disabled',
   description : 'Enable extension instructions (T)'
 )
+option(
+  'ex_inst_12',
+  type : 'feature',
+  value : 'disabled',
+  description : 'My extension for task 1'
+)

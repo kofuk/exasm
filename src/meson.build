@@ -2,6 +2,9 @@ insts = files('../isa/basic.json', '../isa/extra.json')
 if get_option('ex_inst_t').enabled()
   insts += files('../isa/ex_t.json')
 endif
+if get_option('ex_inst_12').enabled()
+  insts += files('../isa/ex_12.json')
+endif
 
 python = find_program('python3')
 

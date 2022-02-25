@@ -1,0 +1,16 @@
+[
+    {
+        "name": "mapblk",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1100",
+        "action": "if((reg[rs]>>4)==0x0)setreg(rd, uword(0xFE00));else if((reg[rs]>>4)==0x1)setreg(rd, uword(0xFE04));else if((reg[rs]>>4)==0x2)setreg(rd, uword(0xFE08));else if((reg[rs]>>4)==0x3)setreg(rd, uword(0xFE0C));else if((reg[rs]>>4)==0x4)setreg(rd, uword(0xFE40));else if((reg[rs]>>4)==0x5)setreg(rd, uword(0xFE44));else if((reg[rs]>>4)==0x6)setreg(rd, uword(0xFE48));else if((reg[rs]>>4)==0x7)setreg(rd, uword(0xFE4C));else if((reg[rs]>>4)==0x8)setreg(rd, uword(0xFE80));else if((reg[rs]>>4)==0x9)setreg(rd, uword(0xFE84));else if((reg[rs]>>4)==0xA)setreg(rd, uword(0xFE88));else if((reg[rs]>>4)==0xB)setreg(rd, uword(0xFE8C));else if((reg[rs]>>4)==0xC)setreg(rd, uword(0xFEC0));else if((reg[rs]>>4)==0xD)setreg(rd, uword(0xFEC4));else if((reg[rs]>>4)==0xE)setreg(rd, uword(0xFEC8));else if((reg[rs]>>4)==0xF)setreg(rd, uword(0xFECC));else throw ExecutionError(\"mapblk can't map specified block number.\")"
+    },
+    {
+        "name": "addv",
+        "type": "reg_arith",
+        "args": ["rd", "rs"],
+        "opcode": "1101",
+        "action": "setreg(rd, (((reg[rd] >> 8) + (reg[rs] >> 8)) << 8) | (((reg[rd] & 0xFF) + (reg[rs] & 0xFF)) & 0xFF))"
+    }
+]
