@@ -204,3 +204,38 @@ input[type=button]:active, button:active {
     border-radius: 0 5px 5px 0;
     border-left: none;
 }
+
+.inline-icon {
+    font-size: 1em !important;
+    margin: 1px;
+    display: inline-block;
+}
+
+.trace-table-container {
+    display: flex;
+}
+
+.trace-table-container table {
+    display: block;
+}
+
+.trace-table-container .trace-table-scroll-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.trace-table-container button {
+    border-radius: 0;
+    padding: 1px;
+}
+
+#collapse_trace_table {
+    border-radius: 5px 0 0 5px;
+}
+
+#expand_trace_table {
+    border-radius: 0 5px 5px 0;
+    border-left: none;
+}
+

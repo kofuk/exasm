@@ -149,13 +149,13 @@ const clearBlinkLine = () => {
     }
 };
 
-const createTraceTable = () => {
+const createTraceTable = (traceWindowSize) => {
     if (emulator === 0) {
         return;
     }
 
-    const progPtr = Module.ccall('dump_partial_program', 'number', ['number'],
-                                 [emulator]);
+    const progPtr = Module.ccall('dump_partial_program', 'number', ['number', 'number', 'number'],
+                                 [emulator, traceOffset, traceWindowSize ? traceWindowSize : states.traceWindowSize]);
     const prog = getStringFromHeap(progPtr);
     Module._free(progPtr);
 
@@ -227,6 +227,7 @@ const states = new Proxy(
         continueInterrupted: true,
         breaked: false,
         breakpoints: [],
+        traceWindowSize: 10,
     },
     {
         set: (obj, prop, value) => {
@@ -275,6 +276,8 @@ const states = new Proxy(
 
                         table.appendChild(tr);
                     });
+                } else if (prop === 'traceWindowSize') {
+                    createTraceTable(value);
                 }
 
                 obj[prop] = value;
@@ -423,11 +426,14 @@ const initEditor = () => {
     }
 };
 
+let traceOffset = 0;
+
 addEventListener('load', () => {
     document.getElementById('prog_init')
         .addEventListener('click', () => {
             states.continueInterrupted = true;
             states.breaked = false;
+            traceOffset = 0;
 
             localStorage.setItem('editor_prog', editorData['editor_prog'].model.getValue());
             localStorage.setItem('editor_mem', editorData['editor_mem'].model.getValue());
@@ -502,17 +508,20 @@ addEventListener('load', () => {
         .addEventListener('click', e => {
             states.continueInterrupted = true;
             states.breaked = false;
+            traceOffset = 0;
             clock();
         });
     document.getElementById('reverse_clock')
         .addEventListener('click', () => {
             states.continueInterrupted = true;
             states.breaked = false;
+            traceOffset = 0;
             reverseClock();
         });
     document.getElementById('continue')
         .addEventListener('click', e => {
             states.breaked = false;
+            traceOffset = 0;
             if (states.continueInterrupted) {
                 states.continueInterrupted = false;
                 doContinue();
@@ -605,6 +614,26 @@ addEventListener('load', () => {
                     e.target.parentNode.remove();
                 });
         });
+
+    document.getElementById('expand_trace_table').addEventListener('click', () => {
+        states.traceWindowSize += 10;
+    });
+
+    document.getElementById('collapse_trace_table').addEventListener('click', () => {
+        if (states.traceWindowSize > 10) {
+            states.traceWindowSize -= 10;
+        }
+    });
+
+    document.getElementById('trace_scroll_up').addEventListener('click', () => {
+        traceOffset--;
+        createTraceTable();
+    });
+
+    document.getElementById('trace_scroll_down').addEventListener('click', () => {
+        traceOffset++;
+        createTraceTable();
+    });
 
     createMemTable();
     initEditor();

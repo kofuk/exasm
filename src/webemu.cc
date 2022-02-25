@@ -72,17 +72,27 @@ __attribute__((used)) void set_mem_value(EmulatorWrapper *ew, std::uint8_t *new_
     }
 }
 
-__attribute__((used)) char *dump_partial_program(EmulatorWrapper *ew) {
+__attribute__((used)) char *dump_partial_program(EmulatorWrapper *ew, int offset, int window_size) {
+    if (window_size < 0) {
+        window_size = 10;
+    }
+
     std::ostringstream ostrm;
     try {
-        std::uint16_t pc = ew->next_pc;
-        int begin_addr = pc - 10;
+        int begin_addr = static_cast<int>(ew->next_pc) + offset * 2 - window_size;
         if (begin_addr < 0) {
             begin_addr = 0;
         }
-        int end_addr = pc + 10;
+        int end_addr = static_cast<int>(ew->next_pc) + offset * 2 + window_size;
         if (end_addr >= 0x10000) {
             end_addr = 0x10000;
+        }
+        while (end_addr - begin_addr < window_size * 2) {
+            if (end_addr < 0x10000) {
+                end_addr += 2;
+            } else if (begin_addr > 0) {
+                begin_addr -= 2;
+            }
         }
         const std::array<std::uint8_t, 0x10000> &mem = ew->emu->get_memory();
         for (int i = begin_addr; i < end_addr; i += 2) {
@@ -192,9 +202,6 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile, std::size_t 
     auto *ew = new EmulatorWrapper(emu);
     ew->prog = insts;
     ew->next_pc = 0;
-
-    std::istringstream prog_mem_strm(dump_program(ew));
-    emu->load_memfile(prog_mem_strm);
 
     return ew;
 }

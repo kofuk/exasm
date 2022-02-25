@@ -123,17 +123,24 @@
         <div>
           Trace
           <div class="tip">
-            <strong>ProTip! </strong>Trace table simply shows decoded data near the program counter,
+            Trace table simply shows decoded data near the program counter,
             which means contents that were not written by you may be shown up!
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Instruction</th>
-              </tr>
-            </thead>
-            <tbody id="trace_body"></tbody>
-          </table>
+          <div class="trace-table-container">
+            <table style="display: block">
+              <thead>
+                <tr>
+                  <th>Instruction</th>
+                </tr>
+              </thead>
+              <tbody id="trace_body"></tbody>
+            </table>
+            <div class="trace-table-scroll-container">
+              <button><span class="material-icons inline-icon" id="trace_scroll_up">expand_less</span></button>
+              <button><span class="material-icons inline-icon" id="trace_scroll_down">expand_more</span></button>
+            </div>
+          </div>
+          <button type="button" id="collapse_trace_table"><span class="material-icons inline-icon">expand_less</span></button><button type="button" id="expand_trace_table"><span class="material-icons inline-icon">expand_more</span>Expand Trace Table</button>
         </div>
       </div>
       <div class="breakpoint-pane pane">
