@@ -22,7 +22,9 @@ if __name__ == '__main__':
                 .replace('setmem', 'set_memory') \
                 .replace('getmem', 'get_memory') \
                 .replace('imm', 'std::get<std::uint8_t>(inst.imm)') \
-                .replace('addr', 'reg[inst.rs]')
+                .replace('addr', 'reg[inst.rs]') \
+                .replace('setstate', 'set_priv_state') \
+                .replace('getstate', 'get_priv_state')
 
             if 'word_align' in inst and inst['word_align']:
                 out.write('    if (reg[inst.rs] % 2 != 0) {\n')

@@ -34,6 +34,10 @@ namespace exasm {
                 out << "ExecHistoryType::CHANGE_MEM{addr: " << eh.event.mem.addr
                     << ", old_val: " << +eh.event.mem.old_val << "}";
                 break;
+            case ExecHistoryType::CHANGE_STATE:
+                out << "ExecHistoryType::CHANGE_STATE{addr: " << eh.event.state.num
+                    << ", old_val: " << +eh.event.state.old_val << "}";
+                break;
             }
             return out;
         }
@@ -202,6 +206,9 @@ namespace exasm {
                 break;
             case ExecHistoryType::CHANGE_REG:
                 reg[eh.event.reg.regnum] = eh.event.reg.old_val;
+                break;
+            case ExecHistoryType::CHANGE_STATE:
+                priv_state[eh.event.state.num] = eh.event.state.old_val;
                 break;
             }
         }

@@ -28,6 +28,7 @@ namespace exasm {
         CHANGE_PC,
         CHANGE_MEM,
         CHANGE_REG,
+        CHANGE_STATE,
     };
 
     class ExecHistory {
@@ -48,6 +49,10 @@ namespace exasm {
                 std::uint8_t regnum;
                 std::uint16_t old_val;
             } reg;
+            struct {
+                std::uint8_t num;
+                std::uint16_t old_val;
+            } state;
         } event;
 
         static ExecHistory of_change_pc(std::uint16_t old_pc, int old_delay_slot_rem,
@@ -76,12 +81,21 @@ namespace exasm {
             eh.event.reg.old_val = old_val;
             return eh;
         }
+
+        static ExecHistory of_change_state(std::uint8_t num, std::uint8_t old_val) {
+            ExecHistory eh;
+            eh.type = ExecHistoryType::CHANGE_STATE;
+            eh.event.state.num = num;
+            eh.event.state.old_val = old_val;
+            return eh;
+        }
     };
 
     class Emulator {
         std::array<std::uint8_t, 0x10000> mem;
         std::vector<Inst> prog;
         std::array<std::uint16_t, 8> reg;
+        std::array<std::uint8_t, 256> priv_state;
 
         std::vector<std::uint16_t> breakpoints;
         bool enable_trap = true;
@@ -99,6 +113,16 @@ namespace exasm {
         void set_pc(std::uint16_t pc) { this->pc = pc; }
 
         void record_exec_history(ExecHistory hist) { exec_history.push_back(std::move(hist)); }
+
+        void set_priv_state(std::uint8_t num, std::uint8_t val) {
+            if (enable_exec_history) {
+                record_exec_history(ExecHistory::of_change_state(num, val));
+            }
+
+            priv_state[num] = val;
+        }
+
+        std::uint8_t get_priv_state(std::uint8_t num) { return priv_state[num]; }
 
         bool should_trap(std::uint16_t addr) const;
 
