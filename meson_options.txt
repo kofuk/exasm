@@ -14,5 +14,11 @@ option(
   'ex_inst_12',
   type : 'feature',
   value : 'disabled',
-  description : 'My extension for task 1'
+  description : 'My extension for task 1 (rev. 2)'
+)
+option(
+  'ex_inst_21',
+  type : 'feature',
+  value : 'disabled',
+  description : 'My extension for task 2'
 )
