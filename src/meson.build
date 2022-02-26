@@ -158,3 +158,12 @@ if meson.can_run_host_binaries()
                       '../tests/emu/@0@.out'.format(t)))
   endforeach
 endif
+
+if get_option('latex_doc').enabled()
+  custom_target(
+    output : ['instructions.tex'],
+    input : ['generate_latex_doc.py', insts],
+    command : [python, '@INPUT@', '@OUTPUT@'],
+    build_by_default : true
+  )
+endif

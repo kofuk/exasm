@@ -5,6 +5,12 @@ option(
   description : 'Prefix for installing HTML artifacts'
 )
 option(
+  'latex_doc',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Enable generation of LaTeX documentation'
+)
+option(
   'ex_inst_t',
   type : 'feature',
   value : 'disabled',
