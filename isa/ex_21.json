@@ -35,7 +35,7 @@
     {
         "name": "stm",
         "meaning": "Set Transformation Mode",
-        "doc": "Sets transformation mode for following call to `xlbu` instruction to value specified in `rs`, then sets the value to `rd`.",
+        "doc": "Sets transformation mode for subsequent call to `xlbu` instruction to value specified in `rs`, then stores set value to `rd`.",
         "type": "reg_arith",
         "args": ["rd", "rs"],
         "opcode": "1101",
@@ -44,7 +44,7 @@
     {
         "name": "xlbu",
         "meaning": "Transformed Load Byte Unsigned",
-        "doc": "Loads from transformed (by current address transormation mode) address value in register `rs` to the lower byte of register `rd`.",
+        "doc": "Loads from transformed (by current address transofrmation mode) address value in register `rs` to the lower byte of register `rd`.",
         "type": "mem",
         "args": ["rd", "addr"],
         "opcode": "0100",
