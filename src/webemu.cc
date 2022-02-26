@@ -8,13 +8,12 @@
 #include "emulator.h"
 
 namespace {
-    bool breakpoint_hit = false;
-    std::uint16_t break_addr;
-
     struct EmulatorWrapper {
         std::vector<exasm::Inst> prog;
         exasm::Emulator *emu;
         std::uint16_t next_pc;
+        bool breakpoint_hit = false;
+        std::uint16_t break_addr;
 
         EmulatorWrapper(exasm::Emulator *emu) : emu(emu) {}
         ~EmulatorWrapper() { delete emu; }
@@ -36,8 +35,8 @@ __attribute__((used)) const std::uint8_t *get_memory(EmulatorWrapper *ew) {
 __attribute__((used)) std::uint16_t next_clock(EmulatorWrapper *ew) {
     try {
         std::uint16_t addr;
-        if (breakpoint_hit) {
-            breakpoint_hit = false;
+        if (ew->breakpoint_hit) {
+            ew->breakpoint_hit = false;
             ew->emu->set_enable_trap(false);
             addr = ew->emu->clock();
             ew->emu->set_enable_trap(true);
@@ -50,8 +49,8 @@ __attribute__((used)) std::uint16_t next_clock(EmulatorWrapper *ew) {
         std::cerr << e.what() << '\n';
     } catch (exasm::Breakpoint &bp) {
         std::cerr << "Breakpoint hit\n";
-        breakpoint_hit = true;
-        break_addr = bp.get_addr();
+        ew->breakpoint_hit = true;
+        ew->break_addr = bp.get_addr();
     }
     return 0;
 }
@@ -144,9 +143,9 @@ __attribute__((used)) void remove_breakpoint(EmulatorWrapper *ew, std::uint16_t 
     ew->emu->remove_breakpoint(addr);
 }
 
-__attribute__((used)) int get_hit_breakpoint() {
-    if (breakpoint_hit) {
-        return static_cast<std::uint32_t>(break_addr);
+    __attribute__((used)) int get_hit_breakpoint(EmulatorWrapper *ew) {
+    if (ew->breakpoint_hit) {
+        return static_cast<std::uint32_t>(ew->break_addr);
     }
     return -1;
 }
@@ -208,7 +207,6 @@ __attribute__((used)) EmulatorWrapper *init_emulator(char *memfile, std::size_t 
 
 __attribute__((used)) void destroy_emulator(EmulatorWrapper *ew) {
     delete ew;
-    breakpoint_hit = false;
 }
 
 __attribute__((used)) char *serialize_mem(EmulatorWrapper *ew) {

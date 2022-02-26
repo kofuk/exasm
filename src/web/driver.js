@@ -300,7 +300,7 @@ const clock = () => {
 
     createTraceTable();
 
-    const breakAddr = Module.ccall('get_hit_breakpoint', 'number', [], []);
+    const breakAddr = Module.ccall('get_hit_breakpoint', 'number', ['number'], [emulator]);
     if (breakAddr >= 0) {
         blinkCurrentLine(breakAddr);
         document.getElementById('break' + breakAddr).parentNode.parentNode
@@ -531,14 +531,22 @@ addEventListener('load', () => {
         });
     document.getElementById('copy_prog_mem')
         .addEventListener('click', () => {
-            if (emulator === 0) {
-                showError('Program not loaded');
-                return;
-            }
+            const memdata = putStringToHeap(editorData['editor_mem'].model.getValue());
+            const progdata = putStringToHeap(editorData['editor_prog'].model.getValue());
+
+            const emulator = Module.ccall('init_emulator', 'number',
+                                    ['number', 'number', 'number', 'numer'],
+                                    [memdata[0], memdata[1], progdata[0], progdata[1]]);
+
+            Module._free(memdata[0]);
+            Module._free(progdata[0]);
+
             const progPtr = Module.ccall('dump_program', 'number', ['number'],
                                          [emulator]);
             const prog = getStringFromHeap(progPtr);
             Module._free(progPtr);
+            Module._free(emulator);
+
             const tmp = document.createElement('textarea');
             tmp.value = prog;
             document.body.appendChild(tmp);
