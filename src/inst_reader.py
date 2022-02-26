@@ -8,6 +8,11 @@ def read_insts(files):
             for inst in json.load(f):
                 if inst['type'] == 'remove':
                     insts = [*filter(lambda x: x['name'] != inst['name'], insts)]
+                elif inst['type'] == 'patch':
+                    for i, _ in filter(lambda x: x[1]['name'] == inst['name'], enumerate(insts)):
+                        for k, v in inst.items():
+                            if k != 'type':
+                                insts[i][k] = v
                 else:
                     for existing_inst in insts:
                         if existing_inst['name'] == inst['name']:
