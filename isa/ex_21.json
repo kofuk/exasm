@@ -19,8 +19,8 @@
     },
     {
         "name": "xlbu",
-        "meaning": "Loads from transformed (by current address transormation mode) address value in register `rs` to the lower byte of register `rd`.",
-        "doc": "Sets address transformation mode to value specified in `rs`, then sets the value to `rd`.",
+        "meaning": "Transformed Load Byte Unsigned",
+        "doc": "Loads from transformed (by current address transormation mode) address value in register `rs` to the lower byte of register `rd`.",
         "type": "mem",
         "args": ["rd", "addr"],
         "opcode": "0100",
