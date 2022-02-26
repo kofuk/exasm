@@ -1,5 +1,29 @@
 [
     {
+        "name": "not",
+        "type": "remove"
+    },
+    {
+        "name": "xor",
+        "type": "remove"
+    },
+    {
+        "name": "xor",
+        "type": "remove"
+    },
+    {
+        "name": "sr8",
+        "type": "remove"
+    },
+    {
+        "name": "sl",
+        "type": "remove"
+    },
+    {
+        "name": "xori",
+        "type": "remove"
+    },
+    {
         "name": "mapblk",
         "meaning": "Map Block Information",
         "doc": "Lookup address of block information by block number. Upper nibble of lower byte is used to determine block number.",
