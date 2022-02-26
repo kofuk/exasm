@@ -45,7 +45,7 @@ if __name__ == '__main__':
   <table>
     <thead>
       <tr>
-        <th>Name</th><th>Instruction</th><th>Meaning</th><th>Description</th>
+        <th>Name</th><th>Opcode</th><th>Mnemonic</th><th>Meaning</th><th>Description</th>
       </tr>
     </thead>
     <tbody>
@@ -55,6 +55,22 @@ if __name__ == '__main__':
             out.write('      <tr>\n')
             out.write('        <td><code>')
             out.write(inst['name'])
+            out.write('</code></td>\n')
+            out.write('        <td><code>')
+            if inst['type'] == 'reg_arith':
+                out.write('00000ddd sss0')
+                out.write(inst['opcode'])
+            elif inst['type'] == 'mem':
+                out.write('00000ddd sss1')
+                out.write(inst['opcode'])
+            elif inst['type'] == 'imm':
+                out.write('0')
+                out.write(inst['opcode'])
+                out.write('ddd xxxxxxxx')
+            elif inst['type'] == 'branch':
+                out.write('1')
+                out.write(inst['opcode'])
+                out.write('ddd xxxxxxxx')
             out.write('</code></td>\n')
             out.write('        <td><code>')
             out.write(inst['name'])
