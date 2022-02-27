@@ -30,6 +30,10 @@ body {
     box-shadow: -2px 3px 8px rgba(0, 0, 0, 0.3);
 }
 
+.doc-notification .close {
+    cursor: pointer;
+}
+
 .container {
     display: flex;
     margin-top: 10px;
@@ -193,16 +197,20 @@ input[type=button]:active, button:active {
 
 #mem_start {
     border-radius: 5px 0 0 5px;
+    margin-right: 0;
 }
 
 #mem_end {
     border-radius: 0;
     border-left: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 #set_range {
     border-radius: 0 5px 5px 0;
     border-left: none;
+    margin-left: 0;
 }
 
 .inline-icon {
@@ -228,14 +236,17 @@ input[type=button]:active, button:active {
 .trace-table-container button {
     border-radius: 0;
     padding: 1px;
+    margin: 0;
 }
 
 #collapse_trace_table {
     border-radius: 5px 0 0 5px;
+    margin-right: 0;
 }
 
 #expand_trace_table {
     border-radius: 0 5px 5px 0;
     border-left: none;
+    margin-left: 0;
 }
 
